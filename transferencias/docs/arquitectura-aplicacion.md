@@ -166,6 +166,9 @@ application/
 │   ├── TransferView.java
 │   ├── TransferActionView.java
 │   └── TransferSearchResult.java
+|
+├── exception/
+|
 └── service/
     ├── InternalTransferService.java
     ├── OutgoingTransferService.java
@@ -884,9 +887,632 @@ Un adaptador no puede llamar directamente a `Transfer` para saltarse la coordina
 Los simuladores no reemplazan integraciones por lógica de negocio dentro de `TransferService`.
 Deben ser independientes, consultables y capaces de devolver efectos ya ejecutados aunque se pierda la respuesta.
 
-## 19. Verificación de la arquitectura y del comportamiento
+## 19. Excepciones de aplicación: `application/exception/`
 
-### 19.1. Pruebas de servicios de aplicación
+### 19.1. Propósito y responsabilidad
+
+La carpeta `exception/` contiene las excepciones que representan errores detectados durante la coordinación de los
+casos de uso de Transferencias.
+
+Estas excepciones permiten identificar por qué una actuación no puede continuar, qué condición falló y qué
+información necesita conservarse para comunicar o investigar el problema.
+
+La aplicación debe distinguir entre:
+
+- Errores en la identidad, autorización o contexto de una actuación.
+- Conflictos de idempotencia y de identidad empresarial.
+- Modificaciones concurrentes incompatibles.
+- Recursos inexistentes o inaccesibles.
+- Dependencias externas indisponibles.
+- Resultados externos contradictorios.
+- Información insuficiente para recuperar una actuación original.
+
+**Regla principal:** una excepción de aplicación no debe sustituir un resultado empresarial válido.
+
+Por ejemplo, una transferencia rechazada correctamente por Fondos constituye un resultado comprobado.
+Una transferencia cuyo resultado monetario se desconoce constituye una actuación pendiente de resolución.
+
+Ninguna de esas situaciones debe convertirse arbitrariamente en una excepción que haga perder su seguimiento.
+
+Las excepciones de aplicación tampoco reemplazan las invariantes protegidas por `domain/`.
+
+### 19.2. Estructura propuesta
+
+```text
+application/
+└── exception/
+    ├── ApplicationException.java
+    ├── InvalidActionContextException.java
+    ├── TransferNotFoundException.java
+    ├── TransferActionNotFoundException.java
+    ├── TransferAccessDeniedException.java
+    ├── IdempotencyConflictException.java
+    ├── TransferIdentityConflictException.java
+    ├── TransferVersionConflictException.java
+    ├── ExternalAuthorityUnavailableException.java
+    ├── ExternalResultConflictException.java
+    └── RecoveryContextMissingException.java
+```
+
+Esta estructura es una propuesta técnica para representar los errores necesarios en los casos de uso.
+
+No obliga a lanzar todas las excepciones desde todos los servicios ni a crear jerarquías adicionales.
+
+### 19.3. Catálogo de excepciones
+
+| Excepción | Significado | Responsabilidad |
+| --- | --- | --- |
+| `ApplicationException` | Excepción base | Unificar errores propios de aplicación. |
+| `InvalidActionContextException` | Contexto inválido | Impedir actuaciones sin contexto válido. |
+| `TransferNotFoundException` | Transferencia inexistente | Identificar una transferencia no encontrada. |
+| `TransferActionNotFoundException` | Actuación inexistente | Identificar una actuación no encontrada. |
+| `TransferAccessDeniedException` | Acceso denegado | Impedir una actuación sin autorización. |
+| `IdempotencyConflictException` | Conflicto de idempotencia | Proteger la identidad de una petición. |
+| `TransferIdentityConflictException` | Conflicto de identidad | Proteger la identidad empresarial. |
+| `TransferVersionConflictException` | Conflicto de versión | Impedir modificaciones desactualizadas. |
+| `ExternalAuthorityUnavailableException` | Autoridad indisponible | Identificar una dependencia no accesible. |
+| `ExternalResultConflictException` | Resultado contradictorio | Identificar evidencias externas incompatibles. |
+| `RecoveryContextMissingException` | Contexto de recuperación ausente | Impedir recuperación sin identidad original. |
+
+### 19.4. `ApplicationException` — Excepción base
+
+**Tipo:** clase abstracta que extiende `RuntimeException`.
+
+**Responsabilidad:** proporcionar una representación común para los errores originados en `application/`.
+
+| Atributo | Tipo Java | Responsabilidad |
+| --- | --- | --- |
+| `errorCode` | `String` | Código estable del error de aplicación. |
+| `message` | `String` | Descripción del problema. |
+| `actionId` | `UUID` | Actuación relacionada, cuando existe. |
+| `transferId` | `UUID` | Transferencia relacionada, cuando existe. |
+| `cause` | `Throwable` | Causa técnica original, cuando corresponde. |
+
+**Reglas:**
+
+- `errorCode` debe permitir distinguir el error sin analizar el texto de `message`.
+- `message` no debe utilizarse para tomar decisiones empresariales.
+- `actionId` y `transferId` son referencias de diagnóstico, no autorizaciones.
+- Los atributos opcionales pueden ser nulos cuando todavía no existe la identidad correspondiente.
+- La excepción no contiene códigos HTTP ni depende de Spring.
+- No debe incorporar credenciales, datos bancarios sensibles ni mensajes completos de proveedores.
+
+**Comportamiento:**
+
+- Permitir que el caso de uso interrumpa una actuación que no puede continuar válidamente.
+- Conservar la causa original cuando el error procede de una dependencia.
+- Facilitar que el adaptador de entrada traduzca el error a su contrato de transporte.
+
+### 19.5. `InvalidActionContextException` — Contexto de actuación inválido
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** impedir que una actuación avance cuando falta información necesaria para identificarla,
+relacionarla o comprobar su legitimidad.
+
+**Condiciones de lanzamiento:**
+
+- Falta una identidad de actuación obligatoria.
+- No existe el contexto verificado requerido para ejecutar la operación.
+- El contexto presenta identidades incompatibles con la actuación solicitada.
+- Una continuación intenta utilizar un contexto que no corresponde a la operación original.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `actionId` | Identificar la actuación cuando está disponible. |
+| `operationId` | Reconocer la operación empresarial relacionada. |
+| `errorCode` | Distinguir qué condición del contexto falló. |
+
+**Casos de uso:** comandos persistentes y continuaciones internas.
+
+**Tratamiento:**
+
+- No ejecutar efectos económicos.
+- No generar identidades nuevas para completar silenciosamente un contexto inválido.
+- Informar que la actuación no puede procesarse con la información proporcionada.
+
+No sustituye las validaciones de formato que corresponden al adaptador de entrada.
+
+### 19.6. `TransferNotFoundException` — Transferencia no encontrada
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** representar una búsqueda que no encuentra la transferencia solicitada.
+
+**Condiciones de lanzamiento:**
+
+- No existe una transferencia correspondiente al `transferId`.
+- Una cancelación o devolución hace referencia a una transferencia inexistente.
+- Una consulta autorizada intenta recuperar un objeto que no existe.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `transferId` | Referencia buscada. |
+| `errorCode` | Identificar que no se encontró la transferencia. |
+
+**Casos de uso:**
+
+- `GetTransfer`
+- `CancelTransfer`
+- `ReturnTransfer`
+
+**Tratamiento:**
+
+- Finalizar la actuación sin modificar información.
+- No crear una transferencia para satisfacer una referencia inexistente.
+- No revelar información sobre objetos para los que el solicitante carece de permisos.
+
+Una transferencia existente pero inaccesible requiere aplicar la política de seguridad correspondiente.
+
+### 19.7. `TransferActionNotFoundException` — Actuación no encontrada
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** indicar que no existe una actuación persistida con la identidad solicitada.
+
+**Condiciones de lanzamiento:**
+
+- `GetTransferAction` no encuentra el `actionId`.
+- Una consulta intenta recuperar una actuación que nunca fue registrada.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `actionId` | Identificar la actuación buscada. |
+| `errorCode` | Distinguir la ausencia de actuación. |
+
+**Caso de uso:** `GetTransferAction`.
+
+**Tratamiento:**
+
+- No crear ni ejecutar una actuación para satisfacer la consulta.
+- No deducir que una transferencia fue rechazada porque no se encontró una actuación.
+- No exponer actuaciones pertenecientes a operaciones fuera del alcance autorizado.
+
+Esta excepción no debe utilizarse automáticamente durante la recuperación de un paso remoto.
+En ese contexto puede existir una inconsistencia que necesita investigación.
+
+### 19.8. `TransferAccessDeniedException` — Acceso denegado
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** impedir operaciones cuando el actor o servicio solicitante no tiene facultades suficientes.
+
+**Condiciones de lanzamiento:**
+
+- El solicitante no puede consultar la transferencia.
+- El actor carece de autorización para cancelar o devolver.
+- El servicio llamador intenta ejecutar una capacidad fuera de su alcance.
+- Una actuación intenta acceder a información no permitida para su finalidad.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `actionId` | Actuación que requiere autorización. |
+| `transferId` | Objeto afectado, cuando corresponde. |
+| `errorCode` | Identificar la denegación de acceso. |
+
+**Casos de uso:** todos, según la capacidad solicitada.
+
+**Tratamiento:**
+
+- Interrumpir la operación antes de producir efectos no autorizados.
+- No exponer datos de la transferencia en el mensaje de error.
+- Conservar la información necesaria para auditoría sin registrar datos sensibles.
+
+La autenticación técnica del consumidor corresponde al adaptador de entrada.
+
+Las facultades sobre cuentas y representaciones se comprueban mediante las autoridades competentes.
+La aplicación coordina esas comprobaciones, pero no reemplaza sus decisiones.
+
+### 19.9. `IdempotencyConflictException` — Conflicto de idempotencia
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** impedir que una misma identidad técnica de petición se utilice con contenido diferente.
+
+**Condiciones de lanzamiento:**
+
+- Existe una `Idempotency-Key` registrada con otra huella de contenido.
+- La petición intenta reutilizar la identidad de una actuación con datos incompatibles.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `actionId` | Actuación original, cuando puede identificarse. |
+| `errorCode` | Identificar el conflicto de idempotencia. |
+
+**Casos de uso:** comandos persistentes.
+
+**Tratamiento:**
+
+- No generar una nueva actuación económica.
+- No reemplazar el contenido de la actuación original.
+- Conservar el registro de idempotencia existente.
+- Informar el conflicto sin volver a invocar autoridades externas.
+
+**Regla fundamental:**
+
+La misma clave con el mismo contenido debe recuperar la actuación original.
+La misma clave con contenido diferente debe generar conflicto.
+
+La excepción no representa una transferencia rechazada por Fondos.
+
+### 19.10. `TransferIdentityConflictException` — Conflicto de identidad empresarial
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** impedir que una identidad empresarial existente represente instrucciones incompatibles.
+
+**Condiciones de lanzamiento:**
+
+- Una identidad de instrucción de origen ya existe con otro contenido.
+- Una referencia externa completa identifica una transferencia con datos diferentes.
+- Se detecta una colisión de identidad empresarial protegida por persistencia.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `actionId` | Actuación que produjo el conflicto. |
+| `transferId` | Transferencia original, cuando corresponde. |
+| `errorCode` | Identificar el conflicto de identidad. |
+
+**Casos de uso:**
+
+- `ExecuteInternalTransfer`
+- `SendOutgoingTransfer`
+- `ReceiveIncomingTransfer`
+
+**Tratamiento:**
+
+- No crear una segunda transferencia con la misma identidad empresarial.
+- No modificar la transferencia original para acomodarla al nuevo contenido.
+- No ejecutar un segundo movimiento monetario.
+- Conservar las referencias necesarias para investigar el conflicto.
+
+La identidad externa comprende participante, mecanismo y referencia de operación.
+Una referencia externa aislada no es suficiente para reconocer la instrucción.
+
+La protección definitiva contra duplicaciones debe existir también en PostgreSQL.
+
+### 19.11. `TransferVersionConflictException` — Conflicto de versión
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** impedir que una actuación sobrescriba cambios confirmados por otra operación concurrente.
+
+**Condiciones de lanzamiento:**
+
+- `expectedVersion` no coincide con la versión empresarial aplicable.
+- Una actualización detecta que otro proceso modificó el agregado.
+- La persistencia rechaza una modificación por conflicto de versión.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `transferId` | Transferencia afectada. |
+| `actionId` | Actuación que intentó modificarla. |
+| `expectedVersion` | Versión esperada por el solicitante. |
+| `actualVersion` | Versión encontrada, cuando está disponible. |
+
+**Casos de uso:**
+
+- `CancelTransfer`
+- `ReturnTransfer`
+- Continuaciones que modifican una transferencia existente.
+
+**Tratamiento:**
+
+- No sobrescribir modificaciones confirmadas.
+- Recuperar el estado vigente antes de decidir cómo continuar.
+- No repetir automáticamente una actuación monetaria para resolver el conflicto.
+
+Debe diferenciarse `expectedVersion` de `lockVersion`.
+La primera expresa la expectativa del solicitante y la segunda protege concurrencia local.
+
+### 19.12. `ExternalAuthorityUnavailableException` — Autoridad externa indisponible
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** representar la imposibilidad de consultar una autoridad requerida cuando todavía puede
+interrumpirse la actuación sin dejar un efecto externo incierto.
+
+**Condiciones de lanzamiento:**
+
+- Una autoridad necesaria para una comprobación previa está indisponible.
+- No puede completarse una validación que debe resolverse antes de admitir la actuación.
+- Una dependencia indispensable no permite obtener una respuesta requerida para continuar de forma segura.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `actionId` | Actuación afectada, cuando existe. |
+| `authorityCode` | Identificar la autoridad indisponible. |
+| `operationCode` | Identificar la capacidad solicitada. |
+| `cause` | Conservar el error técnico original. |
+
+**Casos de uso:** operaciones que requieren comprobaciones de autoridades externas.
+
+**Tratamiento:**
+
+- No inventar un resultado de la autoridad.
+- No sustituir la comprobación por reglas locales de Transferencias.
+- No declarar una transferencia rechazada por una falla de comunicación.
+- Conservar la actuación si ya fue admitida de forma durable.
+
+**Distinción obligatoria:**
+
+Si una actuación remota pudo producir un efecto económico y se perdió la respuesta, corresponde conservar
+el resultado incierto y recuperar la actuación original.
+
+No debe utilizarse esta excepción para descartar ese seguimiento.
+
+### 19.13. `ExternalResultConflictException` — Resultado externo contradictorio
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** identificar información externa incompatible con los hechos ya comprobados.
+
+**Condiciones de lanzamiento:**
+
+- Una autoridad informa resultados contradictorios para la misma actuación.
+- Un resultado pretende modificar un hecho confirmado de forma incompatible.
+- Un mensaje contiene una identidad de efecto diferente de la esperada.
+- Una versión o evidencia externa contradice la información conservada.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `transferId` | Transferencia afectada. |
+| `actionId` | Actuación relacionada. |
+| `authorityCode` | Autoridad que informó el resultado. |
+| `sourceReference` | Referencia del hecho recibido. |
+| `errorCode` | Tipo de contradicción identificada. |
+
+**Casos de uso:**
+
+- `ReceiveIncomingTransfer`
+- `RecoverRemoteStep`
+- `IncorporateExternalResult`
+
+**Tratamiento:**
+
+- No reemplazar automáticamente hechos confirmados.
+- No ejecutar efectos compensatorios sin fundamento.
+- Conservar la evidencia contradictoria para investigación.
+- Mantener el componente correspondiente pendiente de resolución.
+
+La excepción puede comunicar que no fue posible incorporar el resultado como hecho válido.
+No debe provocar la pérdida de la evidencia mediante un rollback accidental.
+
+### 19.14. `RecoveryContextMissingException` — Contexto de recuperación ausente
+
+**Tipo:** excepción de aplicación.
+
+**Responsabilidad:** identificar una actuación que necesita recuperación, pero carece de la información indispensable
+para consultar su efecto original.
+
+**Condiciones de lanzamiento:**
+
+- Falta el identificador de la actuación remota original.
+- No puede reconstruirse la identidad del proveedor responsable.
+- La información persistida no permite consultar el efecto económico original.
+- Existe un trabajo de recuperación sin el contexto necesario para continuarlo.
+
+**Información relevante:**
+
+| Dato | Propósito |
+| --- | --- |
+| `transferId` | Transferencia relacionada. |
+| `actionId` | Actuación original, cuando se conoce. |
+| `componentCode` | Componente que necesita recuperación. |
+| `missingReference` | Identificar la referencia indispensable ausente. |
+
+**Casos de uso:**
+
+- `RecoverRemoteStep`
+- `ResumeTransferWork`
+
+**Tratamiento:**
+
+- No generar una nueva identidad para repetir el efecto.
+- No asumir que el efecto anterior falló.
+- Registrar el impedimento para continuar la recuperación.
+- Mantener la operación bajo seguimiento e investigación.
+
+Una referencia ausente no autoriza a liberar fondos ni a declarar rechazado un efecto económico.
+
+### 19.15. Relación entre excepciones y casos de uso
+
+| Caso de uso | Excepciones de aplicación relevantes |
+| --- | --- |
+| `ExecuteInternalTransfer` | Contexto, acceso, idempotencia, identidad, autoridad. |
+| `SendOutgoingTransfer` | Contexto, acceso, idempotencia, identidad, autoridad. |
+| `ReceiveIncomingTransfer` | Contexto, identidad, idempotencia, autoridad, resultado externo. |
+| `CancelTransfer` | Transferencia inexistente, acceso, versión, idempotencia, autoridad. |
+| `ReturnTransfer` | Transferencia inexistente, acceso, versión, idempotencia, autoridad. |
+| `GetTransfer` | Transferencia inexistente, acceso. |
+| `GetTransferAction` | Actuación inexistente, acceso. |
+| `SearchTransfers` | Acceso, contexto inválido. |
+| `RecoverRemoteStep` | Contexto de recuperación, versión, resultado externo. |
+| `IncorporateExternalResult` | Contexto, versión, resultado externo. |
+| `ResumeTransferWork` | Contexto de recuperación, versión, resultado externo. |
+
+Esta tabla identifica posibilidades, no obliga a lanzar todas las excepciones en cada recorrido.
+
+Los resultados empresariales esperados deben seguir expresándose mediante los modelos de resultado correspondientes.
+
+### 19.16. Diferencia entre excepciones de dominio y aplicación
+
+| Responsabilidad | Ubicación | Ejemplo |
+| --- | --- | --- |
+| Importe inválido | `domain/exception/` | Principal que viola una invariante. |
+| Transición empresarial prohibida | `domain/exception/` | Cambio incompatible con el estado. |
+| Devolución superior al remanente | `domain/exception/` | Importe que supera el principal disponible. |
+| Actuación inexistente | `application/exception/` | Consulta sin `actionId` registrado. |
+| Conflicto de idempotencia | `application/exception/` | Misma clave, diferente contenido. |
+| Conflicto de identidad empresarial | `application/exception/` | Misma referencia, distinto contenido. |
+| Modificación concurrente | `application/exception/` | Versión esperada incompatible. |
+| Dependencia no disponible | `application/exception/` | Autoridad necesaria inaccesible. |
+
+**Reglas de separación:**
+
+- El dominio protege sus propias invariantes y no depende de excepciones de aplicación.
+- La aplicación no debe duplicar las excepciones que ya representan reglas del dominio.
+- Una excepción del dominio puede propagarse hasta el límite de entrada y traducirse allí.
+- La aplicación puede interpretar el error cuando necesita conservar una actuación empresarial.
+- Un error técnico de un adaptador no debe convertirse arbitrariamente en una regla de negocio.
+- Ninguna excepción debe utilizarse para modificar directamente el estado de `Transfer`.
+
+### 19.17. Excepciones frente a resultados inciertos
+
+No todos los problemas requieren lanzar una excepción.
+
+| Situación | Tratamiento |
+| --- | --- |
+| Misma clave, distinto contenido | `IdempotencyConflictException`. |
+| Transferencia inexistente | `TransferNotFoundException`. |
+| Actor sin facultades | `TransferAccessDeniedException`. |
+| Versión incompatible | `TransferVersionConflictException`. |
+| Autoridad indisponible antes de la actuación durable | Error de disponibilidad. |
+| Fondos ejecutó, pero se perdió la respuesta | Resultado incierto y recuperación. |
+| Compensación recibió, pero no confirmó crédito | Seguimiento de acreditación pendiente. |
+| Devolución ejecutada con respuesta perdida | Recuperar `returnEffectId` original. |
+| Mensaje externo contradictorio | Conservar evidencia e investigar. |
+| Transferencia rechazada definitivamente | Registrar rechazo empresarial comprobado. |
+
+**Regla fundamental:** los resultados inciertos no se resuelven lanzando una excepción y descartando la actuación.
+
+Una excepción solo debe interrumpir el flujo cuando la operación no puede continuar válidamente.
+Si ya existe un compromiso durable, deben conservarse su identidad, sus evidencias y su recuperación.
+
+### 19.18. Excepciones y límites transaccionales
+
+El tratamiento de excepciones debe respetar las fronteras transaccionales del caso de uso.
+
+**Antes de confirmar una intención durable:**
+
+- Una excepción puede impedir la confirmación de los cambios locales.
+- No debe realizarse una actuación económica remota antes de conservar la intención necesaria.
+- Los conflictos de identidad deben impedir una segunda ejecución.
+
+**Después de confirmar una intención durable:**
+
+- La operación ya tiene identidad y seguimiento persistentes.
+- Una falla remota no permite eliminar la intención original.
+- Una respuesta perdida debe conservarse como incertidumbre.
+- La recuperación debe utilizar la actuación y el efecto económico originales.
+
+**Durante la incorporación de resultados:**
+
+- El agregado y las evidencias confirmadas deben persistirse atómicamente.
+- Una contradicción debe conservarse para investigación.
+- No debe lanzarse una excepción que revierta accidentalmente el registro de la contradicción.
+
+Si falla la persistencia local después de que un proveedor pudo ejecutar un efecto, no debe suponerse que el
+efecto externo también fue revertido.
+
+### 19.19. Relación con los adaptadores de entrada
+
+Las excepciones de `application/` no conocen HTTP, Kafka ni los mecanismos de transporte.
+
+Los adaptadores son responsables de traducirlas al contrato correspondiente.
+
+| Error de aplicación | Interpretación para el consumidor |
+| --- | --- |
+| `InvalidActionContextException` | Contexto requerido ausente o incompatible. |
+| `TransferNotFoundException` | Transferencia no encontrada. |
+| `TransferActionNotFoundException` | Actuación no encontrada. |
+| `TransferAccessDeniedException` | Acceso no autorizado para la actuación. |
+| `IdempotencyConflictException` | Petición incompatible con otra registrada. |
+| `TransferIdentityConflictException` | Identidad empresarial en conflicto. |
+| `TransferVersionConflictException` | Modificación incompatible con la versión vigente. |
+| `ExternalAuthorityUnavailableException` | Dependencia requerida no disponible. |
+| `ExternalResultConflictException` | Resultado externo incompatible que requiere resolución. |
+| `RecoveryContextMissingException` | Recuperación impedida por falta de información original. |
+
+El adaptador HTTP puede utilizar códigos y Problem Details según el contrato técnico.
+
+Un consumidor por mensajería puede requerir otro tratamiento.
+La excepción no debe cambiar de significado según el transporte.
+
+### 19.20. Observabilidad de excepciones
+
+Cada excepción debe permitir identificar el problema sin exponer información bancaria sensible.
+
+| Señal | Qué registrar |
+| --- | --- |
+| Log estructurado | Código del error, caso de uso, actuación y correlación. |
+| Traza | Operación afectada y dependencia involucrada. |
+| Métrica | Cantidad de errores por código y caso de uso. |
+| Seguimiento durable | Actuación y componente que requieren investigación. |
+
+**Reglas:**
+
+- No registrar contraseñas, tokens, datos bancarios completos ni información sensible innecesaria.
+- No utilizar identificadores de clientes o transferencias como etiquetas de métricas.
+- No registrar varias veces la misma excepción en cada capa sin aportar información.
+- Conservar la causa técnica para diagnóstico cuando corresponda.
+- Diferenciar errores de aplicación de resultados empresariales rechazados o inciertos.
+
+Un timeout no debe contabilizarse como transferencia rechazada.
+
+### 19.21. Ejemplo: `ExecuteInternalTransfer`
+
+El caso de uso recibe una instrucción para transferir dinero entre dos cuentas internas.
+
+| Situación | Comportamiento |
+| --- | --- |
+| Falta el contexto de actuación obligatorio | Interrumpir por contexto inválido. |
+| La clave de idempotencia existe con otro contenido | Interrumpir por conflicto de idempotencia. |
+| La referencia empresarial existe con otra instrucción | Interrumpir por conflicto de identidad. |
+| El actor no tiene facultades | Interrumpir por acceso denegado. |
+| Cuentas no admite una comprobación requerida | No continuar sin una respuesta válida. |
+| Fondos confirma débito y crédito | Registrar el resultado monetario confirmado. |
+| Fondos rechaza definitivamente la ejecución | Registrar el rechazo comprobado. |
+| Fondos ejecuta, pero pierde la respuesta | Conservar incertidumbre y recuperar el efecto original. |
+
+El caso de uso no necesita lanzar una excepción para representar una transferencia completada o rechazada.
+
+Tampoco debe utilizar `ExternalAuthorityUnavailableException` como sustituto de la recuperación monetaria.
+
+### 19.22. Pruebas de excepciones de aplicación
+
+| Escenario | Comportamiento esperado |
+| --- | --- |
+| Contexto obligatorio ausente | No comienza una actuación económica. |
+| Transferencia inexistente | Excepción de transferencia no encontrada. |
+| Actuación inexistente | Excepción de actuación no encontrada. |
+| Acceso no autorizado | No expone información ni ejecuta efectos. |
+| Misma clave con otro contenido | Conflicto sin segunda ejecución. |
+| Identidad externa duplicada con otro contenido | Conflicto sin segundo crédito. |
+| Versión incompatible | No sobrescribe cambios confirmados. |
+| Autoridad indisponible antes de la admisión durable | No inventa un resultado. |
+| Timeout después de solicitar un efecto | Conserva identidad y seguimiento. |
+| Resultado externo contradictorio | Conserva evidencia para investigación. |
+| Recuperación sin referencia original | No genera otra actuación económica. |
+| Fallo local después de un posible efecto remoto | No asume reversión del efecto externo. |
+
+Las pruebas deben comprobar tanto la excepción producida como la ausencia de efectos indebidos.
+
+**Criterio final:** las excepciones de `application/` protegen la coordinación de los casos de uso.
+No deben reemplazar las reglas del dominio, ocultar incertidumbre ni destruir información necesaria para recuperar
+una operación bancaria.
+
+## 20. Verificación de la arquitectura y del comportamiento
+
+### 20.1. Pruebas de servicios de aplicación
 
 | Escenario                          | Qué debe comprobar                                             |
 |------------------------------------|----------------------------------------------------------------|
@@ -901,7 +1527,7 @@ Deben ser independientes, consultables y capaces de devolver efectos ya ejecutad
 | Mensaje duplicado y tardío         | Inbox y hecho registrado una sola vez.                         |
 | Consulta autorizada                | Datos visibles coherentes, sin efectos monetarios.             |
 
-### 19.2. Qué necesita PostgreSQL real
+### 20.2. Qué necesita PostgreSQL real
 
 - Restricciones únicas sobre identidad de origen, operación externa, actuación y efecto económico.
 - Control de versión y bloqueos de transferencia frente a cancelación y despacho.
@@ -911,7 +1537,7 @@ Deben ser independientes, consultables y capaces de devolver efectos ya ejecutad
 
 Una prueba con mocks puede comprobar coordinación y llamadas, pero no demuestra bloqueos ni aislamiento de base.
 
-### 19.3. Qué prueban los simuladores contractuales
+### 20.3. Qué prueban los simuladores contractuales
 
 - Que Fondos puede ejecutar un efecto y perder su respuesta sin permitir duplicados.
 - Que Compensación diferencia acuse, despacho, aceptación, acreditación y rechazo definitivo.
@@ -919,7 +1545,7 @@ Una prueba con mocks puede comprobar coordinación y llamadas, pero no demuestra
 - Que una consulta de recuperación obtiene el resultado original usando la misma identidad.
 - Que el laboratorio ejecuta el caso sin requerir levantar toda la plataforma bancaria.
 
-### 19.4. Qué significa construir correctamente
+### 20.4. Qué significa construir correctamente
 
 - **Compilar:** las clases y dependencias Java son consistentes para esa compilación.
 - **Probar coordinación:** las pruebas comprueban recorridos y decisiones del caso de uso.
@@ -928,7 +1554,7 @@ Una prueba con mocks puede comprobar coordinación y llamadas, pero no demuestra
 
 No confundir estos niveles ni afirmar validación integral solamente por un build exitoso.
 
-## 20. Criterios para implementar `application/` sin perder el enfoque
+## 21. Criterios para implementar `application/` sin perder el enfoque
 
 1. Elegir un caso de uso por su problema empresarial, no por lo sencillo de su endpoint.
 2. Identificar su comando o consulta y el puerto de entrada correspondiente.
