@@ -1,0 +1,200 @@
+services:
+
+  postgres:
+    image: ${POSTGRES_IMAGE}:${POSTGRES_VERSION}
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    restart: ${RESTART_POLICY}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_BIND_HOST}:${POSTGRES_EXTERNAL_PORT}:${POSTGRES_INTERNAL_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: ${HEALTHCHECK_INTERVAL}
+      timeout: ${HEALTHCHECK_TIMEOUT}
+      retries: ${HEALTHCHECK_RETRIES}
+    networks:
+      - transferencias-network
+
+  kafka:
+    image: ${KAFKA_IMAGE}:${KAFKA_VERSION}
+    hostname: kafka
+    container_name: ${KAFKA_CONTAINER_NAME}
+    restart: ${RESTART_POLICY}
+    ports:
+      - "${KAFKA_BIND_HOST}:${KAFKA_EXTERNAL_PORT}:${KAFKA_CLIENT_PORT}"
+    environment:
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID}
+      KAFKA_NODE_ID: ${KAFKA_NODE_ID}
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "${KAFKA_NODE_ID}@kafka:${KAFKA_CONTROLLER_PORT}"
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_LISTENERS: "CONTROLLER://:${KAFKA_CONTROLLER_PORT},PLAINTEXT://:${KAFKA_BROKER_PORT},PLAINTEXT_HOST://:${KAFKA_CLIENT_PORT}"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:${KAFKA_BROKER_PORT},PLAINTEXT_HOST://localhost:${KAFKA_EXTERNAL_PORT}"
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:${KAFKA_CLIENT_PORT} >/dev/null 2>&1
+      interval: ${HEALTHCHECK_INTERVAL}
+      timeout: ${HEALTHCHECK_TIMEOUT}
+      retries: ${HEALTHCHECK_RETRIES}
+      start_period: ${KAFKA_START_PERIOD}
+    networks:
+      - transferencias-network
+
+  keycloak:
+    image: ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}
+    container_name: ${KEYCLOAK_CONTAINER_NAME}
+    restart: ${RESTART_POLICY}
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      KC_DB: dev-file
+      KC_HTTP_PORT: ${KEYCLOAK_INTERNAL_PORT}
+      KC_HOSTNAME: "http://localhost:${KEYCLOAK_EXTERNAL_PORT}"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    ports:
+      - "${KEYCLOAK_BIND_HOST}:${KEYCLOAK_EXTERNAL_PORT}:${KEYCLOAK_INTERNAL_PORT}"
+    configs:
+      - source: keycloak_realm
+        target: /opt/keycloak/data/import/transferencias-realm.json
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    networks:
+      - transferencias-network
+
+  prometheus:
+    image: ${PROMETHEUS_IMAGE}:${PROMETHEUS_VERSION}
+    container_name: ${PROMETHEUS_CONTAINER_NAME}
+    restart: ${RESTART_POLICY}
+    ports:
+      - "${PROMETHEUS_BIND_HOST}:${PROMETHEUS_EXTERNAL_PORT}:${PROMETHEUS_INTERNAL_PORT}"
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
+    volumes:
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION}"
+      - "--web.listen-address=0.0.0.0:${PROMETHEUS_INTERNAL_PORT}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - keycloak
+    networks:
+      - transferencias-network
+
+  grafana:
+    image: ${GRAFANA_IMAGE}:${GRAFANA_VERSION}
+    container_name: ${GRAFANA_CONTAINER_NAME}
+    restart: ${RESTART_POLICY}
+    ports:
+      - "${GRAFANA_BIND_HOST}:${GRAFANA_EXTERNAL_PORT}:${GRAFANA_INTERNAL_PORT}"
+    environment:
+      GF_SERVER_HTTP_PORT: ${GRAFANA_INTERNAL_PORT}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: ${GRAFANA_ALLOW_SIGN_UP}
+    configs:
+      - source: grafana_datasource
+        target: /etc/grafana/provisioning/datasources/prometheus.yml
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - transferencias-network
+
+configs:
+
+  keycloak_realm:
+    content: |
+      {
+        "realm": "${KEYCLOAK_REALM}",
+        "enabled": true,
+        "sslRequired": "none",
+        "clients": [
+          {
+            "clientId": "${KEYCLOAK_PROMETHEUS_CLIENT_ID}",
+            "name": "Prometheus metrics scraper",
+            "enabled": true,
+            "publicClient": false,
+            "standardFlowEnabled": false,
+            "directAccessGrantsEnabled": false,
+            "serviceAccountsEnabled": true,
+            "clientAuthenticatorType": "client-secret",
+            "secret": "${KEYCLOAK_PROMETHEUS_CLIENT_SECRET}"
+          }
+        ]
+      }
+
+  prometheus_config:
+    content: |
+      global:
+        scrape_interval: ${PROMETHEUS_SCRAPE_INTERVAL}
+
+      scrape_configs:
+        - job_name: ${SPRING_APPLICATION_NAME}
+          metrics_path: /actuator/prometheus
+          static_configs:
+            - targets:
+                - "host.docker.internal:${APP_PORT}"
+          oauth2:
+            client_id: ${KEYCLOAK_PROMETHEUS_CLIENT_ID}
+            client_secret: ${KEYCLOAK_PROMETHEUS_CLIENT_SECRET}
+            token_url: http://keycloak:${KEYCLOAK_INTERNAL_PORT}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token
+
+  grafana_datasource:
+    content: |
+      apiVersion: 1
+
+      datasources:
+        - name: Prometheus
+          uid: prometheus
+          type: prometheus
+          access: proxy
+          url: http://prometheus:${PROMETHEUS_INTERNAL_PORT}
+          isDefault: true
+          editable: false
+
+networks:
+  transferencias-network:
+    name: ${DOCKER_NETWORK_NAME}
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: ${POSTGRES_VOLUME_NAME}
+
+  kafka_data:
+    name: ${KAFKA_VOLUME_NAME}
+
+  keycloak_data:
+    name: ${KEYCLOAK_VOLUME_NAME}
+
+  prometheus_data:
+    name: ${PROMETHEUS_VOLUME_NAME}
+
+  grafana_data:
+    name: ${GRAFANA_VOLUME_NAME}
