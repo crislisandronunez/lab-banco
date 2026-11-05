@@ -50,6 +50,7 @@ La aplicación conoce los **contratos de sus puertos**, no los protocolos ni las
 | `application/port/in/`  | Definir las capacidades que puede solicitar un consumidor.             |
 | `application/service/`  | Coordinar casos de uso, decisiones locales y actuaciones remotas.      |
 | `application/port/out/` | Expresar las capacidades requeridas a persistencia y autoridades.      |
+| `application/dto/`      | Definir las solicitudes y respuestas tipadas que utilizan los puertos. |
 | Adaptador de entrada    | Traducir HTTP, evento o trabajo persistente a la invocación del caso.  |
 | Adaptador de salida     | Implementar un puerto con SQL, HTTP, mensajería u otro mecanismo.      |
 
@@ -90,12 +91,12 @@ La aplicación conoce los **contratos de sus puertos**, no los protocolos ni las
 
 ### 3.2. Continuaciones internas
 
-| Operación                   | Referencia en español             | Función técnica                                         |
-|-----------------------------|-----------------------------------|---------------------------------------------------------|
-| `RecoverRemoteStep`         | Recuperar paso remoto             | Consultar un efecto sin repetirlo.                      |
-| `IncorporateExternalResult` | Incorporar resultado externo      | Aplicar evidencia tardía o recibida por otro canal.     |
-| `ResumeTransferWork`        | Reanudar trabajo de transferencia | Continuar tareas durables tras una interrupción.        |
-| `RecordTransferChange`      | Registrar cambio de transferencia | Generar el hecho para Outbox junto con el cambio local. |
+| Operación | Referencia en español | Función técnica |
+| --- | --- | --- |
+| `RecoverRemoteStep` | Recuperar paso remoto | Consultar un efecto sin repetirlo. |
+| `IncorporateExternalResult` | Incorporar resultado externo | Aplicar evidencia tardía o recibida por otro canal. |
+| `ResumeTransferWork` | Reanudar trabajo de transferencia | Continuar tareas durables tras una interrupción. |
+| `RecordTransferChange` | Registrar cambio de transferencia | Generar el hecho para Outbox junto con el cambio local. |
 
 Las continuaciones internas no necesitan endpoints públicos propios. Pueden implementarse como métodos de servicios
 cohesivos, siempre que se conserven identidad, recuperación y autorización del origen del resultado.
@@ -166,9 +167,17 @@ application/
 │   ├── TransferView.java
 │   ├── TransferActionView.java
 │   └── TransferSearchResult.java
-|
+├── dto/
+│   ├── account/
+│   ├── destination/
+│   ├── representation/
+│   ├── controls/
+│   ├── commercial/
+│   ├── funds/
+│   ├── exchange/
+│   ├── currency/
+│   └── persistence/
 ├── exception/
-|
 └── service/
     ├── InternalTransferService.java
     ├── OutgoingTransferService.java
@@ -180,7 +189,7 @@ application/
 ```
 
 - Un servicio puede implementar varios puertos de entrada si sus responsabilidades permanecen cohesionadas.
-- Los modelos específicos de un puerto de salida pueden vivir junto al contrato que los utiliza.
+- Los modelos específicos de puertos de salida se organizan en `application/dto/` por autoridad o responsabilidad.
 - `LocalUnitOfWork` expresa una frontera transaccional; no crea una segunda base ni reemplaza PostgreSQL.
 - Los errores de negocio permanecen en las excepciones del dominio cuando corresponden a sus invariantes.
 - La política técnica de errores de aplicación se separa de códigos HTTP y clases de Spring.
@@ -198,23 +207,25 @@ application/
 | `Port`           | Capacidad que exige la aplicación.  | `FundsAuthorityPort`      |
 | `Repository`     | Acceso abstracto a datos propios.   | `TransferRepository`      |
 | `Service`        | Orquestación de un caso de uso.     | `IncomingTransferService` |
+| `Request`        | Solicitud tipada hacia una autoridad. | `FundsExecutionRequest` |
+| `DTO Result`     | Respuesta tipada de una autoridad.    | `FundsExecutionResult`  |
 
 ## 5. Puertos de entrada: `application/port/in/`
 
 Un puerto de entrada define **qué puede pedir un consumidor**, no cómo llega el HTTP o el mensaje.
 
-| Interfaz                           | Operación sugerida | Entrada                          | Resultado                  |
-|------------------------------------|--------------------|----------------------------------|----------------------------|
-| `ExecuteInternalTransferUseCase`   | `execute(...)`     | `ExecuteInternalTransferCommand` | `TransferActionResult`     |
-| `SendOutgoingTransferUseCase`      | `execute(...)`     | `SendOutgoingTransferCommand`    | `TransferActionResult`     |
-| `ReceiveIncomingTransferUseCase`   | `execute(...)`     | `ReceiveIncomingTransferCommand` | `TransferActionResult`     |
-| `CancelTransferUseCase`            | `execute(...)`     | `CancelTransferCommand`          | `TransferActionResult`     |
-| `ReturnTransferUseCase`            | `execute(...)`     | `ReturnTransferCommand`          | `TransferActionResult`     |
-| `GetTransferUseCase`               | `get(...)`         | `GetTransferQuery`               | `TransferView`             |
-| `GetTransferActionUseCase`         | `get(...)`         | `GetTransferActionQuery`         | `TransferActionView`       |
-| `SearchTransfersUseCase`           | `search(...)`      | `SearchTransfersQuery`           | `TransferSearchResult`     |
-| `RecoverRemoteStepUseCase`         | `recover(...)`     | Identidad del paso original      | Resultado de recuperación  |
-| `IncorporateExternalResultUseCase` | `incorporate(...)` | Resultado con procedencia        | Resultado de incorporación |
+| Interfaz | Operación sugerida | Entrada | Resultado |
+| --- | --- | --- | --- |
+| `ExecuteInternalTransferUseCase` | `execute(...)` | `ExecuteInternalTransferCommand` | `TransferActionResult` |
+| `SendOutgoingTransferUseCase` | `execute(...)` | `SendOutgoingTransferCommand` | `TransferActionResult` |
+| `ReceiveIncomingTransferUseCase` | `execute(...)` | `ReceiveIncomingTransferCommand` | `TransferActionResult` |
+| `CancelTransferUseCase` | `execute(...)` | `CancelTransferCommand` | `TransferActionResult` |
+| `ReturnTransferUseCase` | `execute(...)` | `ReturnTransferCommand` | `TransferActionResult` |
+| `GetTransferUseCase` | `get(...)` | `GetTransferQuery` | `TransferView` |
+| `GetTransferActionUseCase` | `get(...)` | `GetTransferActionQuery` | `TransferActionView` |
+| `SearchTransfersUseCase` | `search(...)` | `SearchTransfersQuery` | `TransferSearchResult` |
+| `RecoverRemoteStepUseCase` | `recover(...)` | Identidad del paso original | Resultado de recuperación |
+| `IncorporateExternalResultUseCase` | `incorporate(...)` | Resultado con procedencia | Resultado de incorporación |
 
 El nombre `execute(...)` puede repetirse en interfaces diferentes: la interfaz aporta el significado del caso.
 
@@ -254,14 +265,14 @@ No aceptar como verdadero un `actorId` incluido libremente por el consumidor.
 
 ### 6.3. Comandos de negocio
 
-| Comando                            | Datos principales                                             | Datos condicionales      |
-|------------------------------------|---------------------------------------------------------------|--------------------------|
-| `ExecuteInternalTransferCommand`   | Origen, destino aceptado, principal, moneda, autorización.    | Cargos, cambio.          |
-| `SendOutgoingTransferCommand`      | Origen, destino externo, mecanismo, importe, autorización.    | Cargos, cambio.          |
-| `ReceiveIncomingTransferCommand`   | Identidad externa, destino, principal, mensaje y evidencia.   | Antecedentes.            |
-| `CancelTransferCommand`            | `transferId`, motivo, contexto y autorización.                | Intercambio relacionado. |
-| `ReturnTransferCommand`            | `transferId`, `returnEffectId`, importe, destino, fundamento. | Antecedentes.            |
-| `IncorporateExternalResultCommand` | Actuación, fuente, hecho, versión y evidencias.               | Resultado específico.    |
+| Comando | Datos principales | Datos condicionales |
+| --- | --- | --- |
+| `ExecuteInternalTransferCommand` | Origen, destino aceptado, principal, moneda, autorización. | Cargos, cambio. |
+| `SendOutgoingTransferCommand` | Origen, destino externo, mecanismo, importe, autorización. | Cargos, cambio. |
+| `ReceiveIncomingTransferCommand` | Identidad externa, destino, principal, mensaje y evidencia. | Antecedentes. |
+| `CancelTransferCommand` | `transferId`, motivo, contexto y autorización. | Intercambio relacionado. |
+| `ReturnTransferCommand` | `transferId`, `returnEffectId`, importe, destino, fundamento. | Antecedentes. |
+| `IncorporateExternalResultCommand` | Actuación, fuente, hecho, versión y evidencias. | Resultado específico. |
 
 **Regla de diseño:** cada comando conserva los campos exactos necesarios para su modalidad.
 No utilizar un único comando enorme con decenas de atributos opcionales que permitan combinaciones inválidas.
@@ -845,15 +856,15 @@ La aplicación diferencia aceptación durable, actuación remota, acreditación 
 
 ## 17. Errores: frontera empresarial y frontera técnica
 
-| Situación                                    | Decisión de aplicación                        | Tratamiento en el adaptador |
-|----------------------------------------------|-----------------------------------------------|-----------------------------|
-| Contenido incompatible                       | No ejecutar otro efecto; informar conflicto.  | Respuesta de conflicto.     |
-| Versión incompatible                         | Conservar el original; no sobrescribir.       | Respuesta de conflicto.     |
-| Destino distinto del aceptado                | Rechazar modificación material no autorizada. | Error de negocio.           |
-| Principal o remanente insuficiente           | No comprometer importe inválido.              | Error de negocio.           |
-| Dependencia indisponible antes de aceptar    | No fingir actuación durable.                  | Error de disponibilidad.    |
-| Solicitud durable, resultado remoto incierto | Guardar seguimiento y misma identidad.        | Resultado consultable.      |
-| Falta de permiso                             | No exponer ni modificar el objeto.            | Error de autorización.      |
+| Situación | Decisión de aplicación | Tratamiento en el adaptador |
+| --- | --- | --- |
+| Contenido incompatible | No ejecutar otro efecto; informar conflicto. | Respuesta de conflicto. |
+| Versión incompatible | Conservar el original; no sobrescribir. | Respuesta de conflicto. |
+| Destino distinto del aceptado | Rechazar modificación material no autorizada. | Error de negocio. |
+| Principal o remanente insuficiente | No comprometer importe inválido. | Error de negocio. |
+| Dependencia indisponible antes de aceptar | No fingir actuación durable. | Error de disponibilidad. |
+| Solicitud durable, resultado remoto incierto | Guardar seguimiento y misma identidad. | Resultado consultable. |
+| Falta de permiso | No exponer ni modificar el objeto. | Error de autorización. |
 
 Los adaptadores HTTP pueden convertir estas situaciones a Problem Details y códigos 400, 403, 409, 422 o 503,
 según el contrato. Las clases de dominio y los puertos no deben depender de respuestas HTTP.
@@ -952,7 +963,7 @@ No obliga a lanzar todas las excepciones desde todos los servicios ni a crear je
 | `TransferVersionConflictException` | Conflicto de versión | Impedir modificaciones desactualizadas. |
 | `ExternalAuthorityUnavailableException` | Autoridad indisponible | Identificar una dependencia no accesible. |
 | `ExternalResultConflictException` | Resultado contradictorio | Identificar evidencias externas incompatibles. |
-| `RecoveryContextMissingException` | Contexto de recuperación ausente | Impedir recuperación sin identidad original. |
+| `RecoveryContextMissingException` | Contexto de recuperación ausente | Impedir recuperar sin identidad original. |
 
 ### 19.4. `ApplicationException` — Excepción base
 
@@ -1510,9 +1521,345 @@ Las pruebas deben comprobar tanto la excepción producida como la ausencia de ef
 No deben reemplazar las reglas del dominio, ocultar incertidumbre ni destruir información necesaria para recuperar
 una operación bancaria.
 
-## 20. Verificación de la arquitectura y del comportamiento
+## 20. Modelos de los puertos de salida: `application/dto/`
 
-### 20.1. Pruebas de servicios de aplicación
+### 20.1. Propósito y responsabilidad
+
+`application/dto/` reúne los objetos tipados que necesitan los puertos de salida para intercambiar información
+sin acoplar los casos de uso a PostgreSQL, HTTP, Kafka, JPA ni al formato particular de un simulador.
+
+Estos modelos son **contratos internos de la aplicación**. Su nombre técnico permanece en inglés y su significado
+empresarial se explica en español.
+
+La carpeta no reemplaza `application/command/`, `application/query/` ni `application/result/`:
+
+| Elemento | Qué representa | Quién lo utiliza |
+| --- | --- | --- |
+| `Command` | Solicitud de un caso de uso. | Puerto de entrada y servicio. |
+| `Query` | Petición de una consulta de aplicación. | Puerto de entrada y servicio. |
+| `Result` y `View` | Respuesta del caso de uso al consumidor. | Servicio y puerto de entrada. |
+| `dto/<autoridad>/*Request` | Información enviada a una autoridad. | Servicio y puerto de salida. |
+| `dto/<autoridad>/*Result` | Respuesta de una autoridad. | Puerto de salida y servicio. |
+| `dto/persistence/*` | Datos propios de soporte que requieren un contrato. | Servicios y repositorios locales. |
+| Entidad u objeto de valor del dominio | Estado y conceptos empresariales protegidos. | Dominio y repositorios. |
+
+**Regla central:** cada puerto recibe y devuelve el tipo que expresa su responsabilidad. No todos necesitan DTO.
+
+### 20.2. Organización de carpetas
+
+```text
+application/
+└── dto/
+    ├── account/
+    │   ├── AccountCheckRequest.java
+    │   └── AccountCheckResult.java
+    ├── destination/
+    │   ├── DestinationResolutionRequest.java
+    │   └── DestinationResolutionResult.java
+    ├── representation/
+    │   ├── RepresentationCheckRequest.java
+    │   └── RepresentationCheckResult.java
+    ├── controls/
+    │   ├── BusinessControlsRequest.java
+    │   └── BusinessControlsResult.java
+    ├── commercial/
+    │   ├── CommercialConditionsRequest.java
+    │   └── CommercialConditionsResult.java
+    ├── funds/
+    │   ├── FundsExecutionRequest.java
+    │   ├── FundsExecutionResult.java
+    │   ├── FundsReservationRequest.java
+    │   ├── FundsReservationResult.java
+    │   ├── FundsReservationProtectionRequest.java
+    │   ├── FundsReservationConsumptionRequest.java
+    │   ├── FundsReservationReleaseRequest.java
+    │   ├── FundsIncomingCreditRequest.java
+    │   ├── FundsReturnEffectRequest.java
+    │   ├── FundsMonetaryEffectResult.java
+    │   ├── FundsRecoveryRequest.java
+    │   ├── FundsRecoveryResult.java
+    │   └── FundsReservationQuery.java
+    ├── exchange/
+    │   ├── ExchangeMechanismRequest.java
+    │   ├── ExchangeMechanismResult.java
+    │   ├── ExchangePreparationRequest.java
+    │   ├── ExchangePreparationResult.java
+    │   ├── ExchangeDispatchRequest.java
+    │   ├── ExchangeDispatchResult.java
+    │   ├── ExchangeCancellationRequest.java
+    │   ├── ExchangeCancellationResult.java
+    │   ├── ExchangeReturnRequest.java
+    │   ├── ExchangeReturnResult.java
+    │   ├── ExchangeRecoveryRequest.java
+    │   └── ExchangeRecoveryResult.java
+    ├── currency/
+    │   ├── CurrencyConversionRequest.java
+    │   └── CurrencyConversionResult.java
+    └── persistence/
+        ├── TransferOriginIdentity.java
+        ├── TransferActionSnapshot.java
+        ├── IdempotencyRecord.java
+        ├── TransferHistoryEntry.java
+        ├── OutboxEvent.java
+        ├── InboxMessage.java
+        └── RecoveryJob.java
+```
+
+La estructura es una **propuesta técnica** para expresar las operaciones ya descritas en los puertos.
+No significa que todos los archivos deban crearse antes de implementar un caso de uso.
+
+Cuando dos operaciones comparten realmente el mismo contrato, pueden reutilizar el mismo tipo.
+No se debe forzar un DTO universal con campos opcionales para operaciones empresariales incompatibles.
+
+Si un modelo apropiado ya existe en `domain/` o en `application/dto/`, se reutiliza sin duplicarlo.
+
+### 20.3. Criterios para elegir parámetros y retornos
+
+| Necesidad | Entrada | Retorno |
+| --- | --- | --- |
+| Guardar un agregado | `Transfer` | `Transfer` o `void`, según el contrato. |
+| Buscar por identidad simple | `UUID transferId` | `Optional<Transfer>`. |
+| Buscar por identidad compuesta | Objeto tipado de identidad. | `Optional<Transfer>`. |
+| Recuperar varias coincidencias | Criterio tipado de búsqueda. | `List<T>` o resultado tipado. |
+| Comprobar una autoridad | `*Request` específico. | `*Result` específico. |
+| Consultar una autoridad por un ID | Identificador o consulta tipada. | Resultado con hechos y evidencias. |
+| Ejecutar un efecto externo | `*Request` con identidad estable. | Resultado tipado y recuperable. |
+| Confirmar una unidad local | Función transaccional tipada. | Resultado de la función. |
+
+**No está prohibido un `UUID` aislado**: es adecuado cuando identifica por sí solo lo que se consulta.
+Lo que se evita es descomponer una solicitud empresarial completa en numerosos parámetros sueltos.
+
+Los puertos no deben usar `Object`, mapas genéricos ni `String` sin semántica para ocultar sus contratos.
+Los `Command` y `Result` de entrada no sustituyen a las entidades que se guardan en repositorios.
+
+### 20.4. Repositorios y objetos propios de persistencia
+
+`TransferRepository` trabaja con el agregado `Transfer`, que conserva la consistencia de sus componentes.
+No se crea un repositorio independiente por cada una de las entidades internas del agregado.
+
+Ejemplo de firmas para la persistencia del agregado:
+
+```java
+Transfer save(Transfer transfer);
+Optional<Transfer> findById(UUID transferId);
+Optional<Transfer> findByOriginIdentity(TransferOriginIdentity identity);
+Optional<Transfer> findByExternalIdentity(ExternalOperationReference identity);
+Optional<Transfer> lockForUpdate(UUID transferId);
+```
+
+`TransferOriginIdentity` agrupa el servicio de origen, el tipo de origen y la referencia de instrucción.
+`ExternalOperationReference` ya existe en el dominio y se reutiliza como identidad externa completa.
+
+La unicidad empresarial y el control concurrente deben estar respaldados por PostgreSQL.
+Un método `find...` no sustituye una restricción única ni un bloqueo requerido por el negocio.
+
+Otros repositorios guardan **registros propios de coordinación**, que no son necesariamente entidades de `domain/`:
+
+| Puerto | Objeto tipado propuesto | Responsabilidad |
+| --- | --- | --- |
+| `TransferActionRepository` | `TransferActionSnapshot` | Actuación y resultado recuperable. |
+| `IdempotencyRepository` | `IdempotencyRecord` | Clave, huella y actuación original. |
+| `TransferHistoryRepository` | `TransferHistoryEntry` | Historia y evidencia de cada cambio. |
+| `TransferOutboxRepository` | `OutboxEvent` | Evento durable antes de publicar. |
+| `TransferInboxRepository` | `InboxMessage` | Mensaje recibido y deduplicación. |
+| `RecoveryJobRepository` | `RecoveryJob` | Trabajo recuperable y próximo control. |
+
+Estos tipos son modelos de aplicación, **no entidades JPA** ni copias de las tablas físicas.
+Sus campos se ajustan a las identidades, evidencias, versiones y restricciones realmente necesarias.
+
+Para guardar un registro de soporte, el método recibe ese registro como objeto; para buscarlo puede recibir su ID.
+Cuando el registro pueda no existir, la búsqueda devuelve `Optional<T>`.
+
+`LocalUnitOfWork` delimita una transacción local y no necesita un DTO de negocio propio.
+Su contrato debe permitir ejecutar una operación tipada y confirmar o revertir sus cambios de forma atómica.
+
+### 20.5. Puertos de salida hacia autoridades: tipos por capacidad
+
+Cada autoridad conserva su propia decisión empresarial. El puerto define la solicitud y la respuesta que
+Transferencias necesita; el adaptador transforma esos objetos al protocolo concreto del simulador.
+
+| Puerto | Método orientativo | Entrada | Retorno |
+| --- | --- | --- | --- |
+| `AccountAuthorityPort` | `checkAccount(...)` | `AccountCheckRequest` | `AccountCheckResult` |
+| `DestinationResolutionPort` | `resolveDestination` | `DestinationResolutionRequest` | `DestinationResolutionResult` |
+| `RepresentationAuthorityPort` | `checkRepresentation` | `RepresentationCheckRequest` | `RepresentationCheckResult` |
+| `BusinessControlsPort` | `checkControls(...)` | `BusinessControlsRequest` | `BusinessControlsResult` |
+| `CommercialConditionsPort` | `determineConditions` | `CommercialConditionsRequest` | `CommercialConditionsResult` |
+| `CurrencyExchangePort` | `verifyConversion(...)` | `CurrencyConversionRequest` | `CurrencyConversionResult` |
+
+Son nombres Java propuestos para capacidades documentadas. No implican que el proveedor tenga esos endpoints.
+
+### 20.6. `FundsAuthorityPort` — Solicitudes y resultados de Fondos
+
+Los DTO de `dto/funds/` representan solicitudes a la autoridad monetaria, no operaciones ejecutadas localmente.
+
+| Método del puerto | Entrada | Retorno |
+| --- | --- | --- |
+| `executeInternalMovements(...)` | `FundsExecutionRequest` | `FundsExecutionResult` |
+| `createReservation(...)` | `FundsReservationRequest` | `FundsReservationResult` |
+| `protectReservation(...)` | `FundsReservationProtectionRequest` | `FundsReservationResult` |
+| `consumeReservation(...)` | `FundsReservationConsumptionRequest` | `FundsMonetaryEffectResult` |
+| `releaseReservation(...)` | `FundsReservationReleaseRequest` | `FundsReservationResult` |
+| `creditIncoming(...)` | `FundsIncomingCreditRequest` | `FundsMonetaryEffectResult` |
+| `executeReturnEffect(...)` | `FundsReturnEffectRequest` | `FundsMonetaryEffectResult` |
+| `recoverMonetaryAction(...)` | `FundsRecoveryRequest` | `FundsRecoveryResult` |
+| `getReservation(...)` | `FundsReservationQuery` | `FundsReservationResult` |
+
+**`FundsExecutionRequest` — Solicitud de movimientos internos relacionados.**
+
+| Dato | Significado |
+| --- | --- |
+| `remoteActionId` | Identidad estable de la actuación solicitada a Fondos. |
+| `effectId` | Identidad estable del conjunto económico. |
+| `sourceAccountId` | Cuenta de origen del débito. |
+| `destinationAccountId` | Cuenta interna de destino del crédito. |
+| `principalAmount` | Importe exacto y positivo del principal. |
+| `currency` | Moneda del movimiento, sin conversión implícita. |
+| `concepts` | Conceptos monetarios separados cuando correspondan. |
+| `authorizationReference` | Fundamento verificable de la actuación. |
+| `reservationReference` | Reserva previa, cuando corresponda. |
+
+**`FundsExecutionResult` — Resultado del conjunto solicitado.**
+
+| Dato | Significado |
+| --- | --- |
+| `remoteActionId` y `effectId` | Vinculan el resultado con la solicitud original. |
+| `outcome` | Confirmación, rechazo definitivo o resultado no comprobado. |
+| `debitReference` | Efecto de débito confirmado, si existe. |
+| `creditReference` | Efecto de crédito confirmado, si existe. |
+| `chargeEffectReferences` | Cargos ejecutados, cuando corresponda. |
+| `evidenceReferences` | Evidencias y procedencia de las confirmaciones. |
+| `confirmedAt` | Momento del hecho confirmado, si corresponde. |
+
+No basta con que el método retorne normalmente: el servicio debe interpretar los hechos informados.
+Un acuse o un timeout no justifican declarar acreditación ni repetir un conjunto monetario.
+
+**Reservas:** `FundsReservationRequest` identifica cuenta, importe, moneda, conceptos y actuación original.
+El resultado informa reserva identificada, alcance, firmeza, evidencias y componentes pendientes.
+Los DTO para proteger, consumir o liberar incluyen la reserva original, la actuación y su fundamento comprobable.
+
+**Créditos y devoluciones:** `FundsIncomingCreditRequest` y `FundsReturnEffectRequest` conservan la identidad del
+movimiento único, importe, moneda, destino y autorización o procedencia correspondiente.
+`FundsMonetaryEffectResult` distingue efecto confirmado, rechazo comprobado e incertidumbre, con evidencias.
+
+**Recuperación:** `FundsRecoveryRequest` identifica la actuación y el efecto originales.
+`FundsRecoveryResult` devuelve el resultado comprobado o el pendiente, sin crear una nueva identidad económica.
+Una consulta `getReservation(...)` sin datos concluyentes no demuestra que un efecto no pueda ocurrir.
+
+### 20.7. `ExchangeAuthorityPort` — Solicitudes y resultados de intercambio
+
+Los DTO de `dto/exchange/` conservan participante, mecanismo, versión, operación y evidencias relevantes.
+
+| Método del puerto | Entrada | Retorno |
+| --- | --- | --- |
+| `validateMechanism(...)` | `ExchangeMechanismRequest` | `ExchangeMechanismResult` |
+| `prepareExchange(...)` | `ExchangePreparationRequest` | `ExchangePreparationResult` |
+| `dispatchExchange(...)` | `ExchangeDispatchRequest` | `ExchangeDispatchResult` |
+| `requestCancellation(...)` | `ExchangeCancellationRequest` | `ExchangeCancellationResult` |
+| `requestReturn(...)` | `ExchangeReturnRequest` | `ExchangeReturnResult` |
+| `recoverExchange(...)` | `ExchangeRecoveryRequest` | `ExchangeRecoveryResult` |
+
+**Comprobación de mecanismo:** consulta participante, mecanismo, versión y operación permitida.
+Su resultado identifica habilitación, condiciones verificadas y autoridad responsable.
+
+**Preparación:** identifica transferencia, destino aceptado, principal, moneda, cobertura y actuación original.
+Su resultado identifica el intercambio preparado; no demuestra que haya sido enviado.
+
+**Despacho:** refiere al intercambio preparado y a la decisión de despacho válida frente a una cancelación.
+Su resultado distingue preparación, envío efectivo, aceptación y acreditación mediante hechos independientes.
+
+**Cancelación:** refiere al intercambio original y conserva el resultado de la solicitud de cancelación.
+Una petición aceptada técnicamente no significa que el envío haya sido detenido.
+
+**Devolución:** identifica la devolución, el importe y el fundamento autorizado del retorno externo.
+Su resultado no permite debitar arbitrariamente al beneficiario.
+
+**Recuperación:** consulta la actuación externa original con su referencia estable.
+La ausencia de respuesta no autoriza a liberar cobertura ni a declarar rechazo.
+
+### 20.8. Otras autoridades y contenido mínimo de los DTO
+
+| Familia | Entrada necesaria | Resultado necesario |
+| --- | --- | --- |
+| `account/` | Cuenta, operación, moneda y contexto. | Capacidades, restricciones y evidencia. |
+| `destination/` | Identificador bancario, tipo y contexto. | Destino resuelto, referencia y momento. |
+| `representation/` | Actor, representado, cuenta y facultad. | Decisión, alcance y evidencia. |
+| `controls/` | Contenido, actores, importe y finalidad. | Admisión, impedimentos y evidencias. |
+| `commercial/` | Operación y condiciones comerciales. | Conceptos, determinación y referencias. |
+| `currency/` | Conversión identificada y condiciones. | Montos, monedas y referencia autorizada. |
+
+`DestinationResolutionResult` es una resolución verificable que se presenta para aceptación.
+Una vez aceptado el destino, una nueva resolución de alias no modifica la instrucción original.
+
+`CurrencyConversionResult` informa una operación de Cambio de moneda identificada.
+Transferencias no calcula una conversión implícita ni decide un tipo de cambio por sí mismo.
+
+Los resultados de comprobaciones deben conservar la procedencia, vigencia y evidencias necesarias para decidir.
+Las reglas de cada autoridad se mantienen en su simulador o integración, no se copian en `application/`.
+
+### 20.9. Tipado, validaciones y significado de los resultados
+
+- Preferir `record` inmutables para solicitudes y respuestas sin comportamiento empresarial propio.
+- Validar estructura, obligatoriedad y consistencia elemental al construir cada modelo.
+- Utilizar `BigDecimal` para importes monetarios; no utilizar `double` ni `float`.
+- Reutilizar `Currency`, `ObjectReference`, `MonetaryConcept` y otros tipos existentes cuando correspondan.
+- Usar tipos explícitos para resultados y hechos; evitar decidir por el texto de `message` o un HTTP 200.
+- Conservar `remoteActionId`, `effectId`, identidad externa y evidencias según la operación.
+- No confundir `actionId`, `operationId`, identidad de mensaje e identidad del efecto económico.
+- No deducir `REJECTED` de un timeout, un `Optional.empty()` remoto o un acuse sin información suficiente.
+- Distinguir aceptación, despacho, acreditación, devolución y liquidación cuando sean hechos diferentes.
+- Un DTO no modifica entidades, no conserva saldos propios y no ejecuta reglas de otra autoridad.
+
+Los códigos concretos de estado y los campos condicionales se ajustan a los contratos empresariales aplicables.
+No introducir un enum o una jerarquía adicional cuando ya existe un tipo válido que representa el mismo concepto.
+
+### 20.10. Mappers y límites de infraestructura
+
+```text
+InternalTransferService
+    |
+    +--> TransferRepository.save(Transfer)
+    |        |
+    |        v
+    |    Adaptador PostgreSQL --> Mapper --> Modelo de persistencia
+    |
+    +--> FundsAuthorityPort.executeInternalMovements(FundsExecutionRequest)
+             |
+             v
+         Adaptador de Fondos --> Mapper --> Contrato del simulador
+                                         |
+                                         v
+                              FundsExecutionResult
+```
+
+El repositorio recibe el agregado `Transfer`; no recibe una lista de sus atributos ni un comando de entrada.
+La reconstrucción desde PostgreSQL utiliza las capacidades válidas del dominio para restaurar el agregado.
+
+El adaptador de autoridad transforma el DTO de aplicación a HTTP, mensaje u otro protocolo y viceversa.
+El DTO de `application/` no lleva anotaciones JPA ni estructuras de cliente HTTP.
+
+El dominio conserva su encapsulamiento: no agregar setters o getters arbitrarios para satisfacer un mapper.
+Si falta una forma legítima de exponer o reconstruir un dato necesario, se debe señalar antes de modificar el dominio.
+
+### 20.11. Criterios para declarar los contratos de salida
+
+1. Revisar la capacidad que exige cada uno de los 16 puertos existentes de `application/port/out/`.
+2. Para `TransferRepository`, utilizar `Transfer` y las identidades propias de búsqueda.
+3. Para registros de soporte, definir objetos tipados sin convertirlos en entidades JPA.
+4. Para cada autoridad, declarar la operación y sus tipos `Request` y `Result` adecuados.
+5. Crear los modelos exclusivamente en la carpeta `application/dto/<familia>/` correspondiente.
+6. Reutilizar entidades y objetos de valor existentes cuando representen exactamente el dato necesario.
+7. No crear DTO redundantes si el método necesita únicamente un identificador o un objeto existente.
+8. Mantener los puertos y DTO independientes de protocolos, frameworks y simuladores concretos.
+9. No implementar adaptadores, mappers ni lógica de casos de uso como parte de la declaración de contratos.
+10. Comprobar compilación y coherencia de firmas; eso no demuestra ejecución ni pruebas de integración.
+
+**Criterio final:** los DTO permiten expresar contratos de salida precisos sin debilitar el dominio ni trasladar
+la lógica de otras autoridades al servicio de Transferencias.
+
+## 21. Verificación de la arquitectura y del comportamiento
+
+### 21.1. Pruebas de servicios de aplicación
 
 | Escenario                          | Qué debe comprobar                                             |
 |------------------------------------|----------------------------------------------------------------|
@@ -1527,7 +1874,7 @@ una operación bancaria.
 | Mensaje duplicado y tardío         | Inbox y hecho registrado una sola vez.                         |
 | Consulta autorizada                | Datos visibles coherentes, sin efectos monetarios.             |
 
-### 20.2. Qué necesita PostgreSQL real
+### 21.2. Qué necesita PostgreSQL real
 
 - Restricciones únicas sobre identidad de origen, operación externa, actuación y efecto económico.
 - Control de versión y bloqueos de transferencia frente a cancelación y despacho.
@@ -1537,7 +1884,7 @@ una operación bancaria.
 
 Una prueba con mocks puede comprobar coordinación y llamadas, pero no demuestra bloqueos ni aislamiento de base.
 
-### 20.3. Qué prueban los simuladores contractuales
+### 21.3. Qué prueban los simuladores contractuales
 
 - Que Fondos puede ejecutar un efecto y perder su respuesta sin permitir duplicados.
 - Que Compensación diferencia acuse, despacho, aceptación, acreditación y rechazo definitivo.
@@ -1545,7 +1892,7 @@ Una prueba con mocks puede comprobar coordinación y llamadas, pero no demuestra
 - Que una consulta de recuperación obtiene el resultado original usando la misma identidad.
 - Que el laboratorio ejecuta el caso sin requerir levantar toda la plataforma bancaria.
 
-### 20.4. Qué significa construir correctamente
+### 21.4. Qué significa construir correctamente
 
 - **Compilar:** las clases y dependencias Java son consistentes para esa compilación.
 - **Probar coordinación:** las pruebas comprueban recorridos y decisiones del caso de uso.
@@ -1554,7 +1901,7 @@ Una prueba con mocks puede comprobar coordinación y llamadas, pero no demuestra
 
 No confundir estos niveles ni afirmar validación integral solamente por un build exitoso.
 
-## 21. Criterios para implementar `application/` sin perder el enfoque
+## 22. Criterios para implementar `application/` sin perder el enfoque
 
 1. Elegir un caso de uso por su problema empresarial, no por lo sencillo de su endpoint.
 2. Identificar su comando o consulta y el puerto de entrada correspondiente.
@@ -1569,3 +1916,5 @@ No confundir estos niveles ni afirmar validación integral solamente por un buil
 
 El objetivo es construir casos de uso que representen decisiones bancarias, no simples secuencias de llamadas.
 La arquitectura hexagonal facilita reemplazar los simuladores sin trasladar su lógica a Transferencias.
+
+````
