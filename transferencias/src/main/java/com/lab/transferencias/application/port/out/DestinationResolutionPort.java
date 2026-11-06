@@ -1,9 +1,13 @@
 package com.lab.transferencias.application.port.out;
 
+import com.lab.transferencias.application.dto.destination.DestinationResolutionRequest;
+import com.lab.transferencias.application.dto.destination.DestinationResolutionResult;
+
 /**
- * Contrato para resolver un alias o referencia de destino hacia un destino bancario aceptado.
- * Encapsula la autoridad de identificación bancaria y la validación del beneficiario.
+ * Contrato para resolver un destino bancario y devolver una resolución verificable para la operación.
+ * La respuesta conserva la identidad del destino, la autoridad y la evidencia del resultado.
  */
 public interface DestinationResolutionPort {
-}
 
+  DestinationResolutionResult resolveDestination(DestinationResolutionRequest request);
+}

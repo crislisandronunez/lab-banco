@@ -1,9 +1,19 @@
 package com.lab.transferencias.application.port.out;
 
+import com.lab.transferencias.application.dto.persistence.InboxEventRecord;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 /**
- * Contrato para registrar mensajes o eventos entrantes y evitar duplicados de procesamiento.
- * Facilita la recepción segura de resultados y peticiones externas.
+ * Contrato para deduplicar y recuperar mensajes o eventos entrantes sin procesarlos dos veces.
+ * La identidad del mensaje se conserva con la del hecho externo que representa.
  */
 public interface TransferInboxRepository {
-}
 
+  InboxEventRecord save(InboxEventRecord event);
+
+  Optional<InboxEventRecord> findByMessageId(UUID messageId);
+
+  List<InboxEventRecord> findByTransferId(UUID transferId);
+}

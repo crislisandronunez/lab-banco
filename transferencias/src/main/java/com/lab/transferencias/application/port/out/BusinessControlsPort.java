@@ -1,9 +1,13 @@
 package com.lab.transferencias.application.port.out;
 
+import com.lab.transferencias.application.dto.controls.BusinessControlRequest;
+import com.lab.transferencias.application.dto.controls.BusinessControlResult;
+
 /**
- * Contrato para consultar restricciones, límites y controles de negocio aplicables a la operación.
- * Permite validar si la transferencia puede continuar bajo reglas de riesgo y cumplimiento.
+ * Contrato para evaluar restricciones, límites y controles de riesgo y cumplimiento aplicables.
+ * El resultado identifica la decisión, el alcance y la autoridad responsable.
  */
 public interface BusinessControlsPort {
-}
 
+  BusinessControlResult evaluateControls(BusinessControlRequest request);
+}

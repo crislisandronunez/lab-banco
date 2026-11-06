@@ -91,12 +91,12 @@ La aplicación conoce los **contratos de sus puertos**, no los protocolos ni las
 
 ### 3.2. Continuaciones internas
 
-| Operación | Referencia en español | Función técnica |
-| --- | --- | --- |
-| `RecoverRemoteStep` | Recuperar paso remoto | Consultar un efecto sin repetirlo. |
-| `IncorporateExternalResult` | Incorporar resultado externo | Aplicar evidencia tardía o recibida por otro canal. |
-| `ResumeTransferWork` | Reanudar trabajo de transferencia | Continuar tareas durables tras una interrupción. |
-| `RecordTransferChange` | Registrar cambio de transferencia | Generar el hecho para Outbox junto con el cambio local. |
+| Operación                   | Referencia en español             | Función técnica                                         |
+|-----------------------------|-----------------------------------|---------------------------------------------------------|
+| `RecoverRemoteStep`         | Recuperar paso remoto             | Consultar un efecto sin repetirlo.                      |
+| `IncorporateExternalResult` | Incorporar resultado externo      | Aplicar evidencia tardía o recibida por otro canal.     |
+| `ResumeTransferWork`        | Reanudar trabajo de transferencia | Continuar tareas durables tras una interrupción.        |
+| `RecordTransferChange`      | Registrar cambio de transferencia | Generar el hecho para Outbox junto con el cambio local. |
 
 Las continuaciones internas no necesitan endpoints públicos propios. Pueden implementarse como métodos de servicios
 cohesivos, siempre que se conserven identidad, recuperación y autorización del origen del resultado.
@@ -197,35 +197,35 @@ application/
 
 ### 4.1. Cómo leer los nombres
 
-| Sufijo o paquete | Significado                         | Ejemplo                   |
-|------------------|-------------------------------------|---------------------------|
-| `UseCase`        | Contrato de entrada.                | `CancelTransferUseCase`   |
-| `Command`        | Datos de una actuación persistente. | `ReturnTransferCommand`   |
-| `Query`          | Datos de una consulta sin efectos.  | `GetTransferQuery`        |
-| `Result`         | Resultado de una actuación.         | `TransferActionResult`    |
-| `View`           | Proyección de lectura autorizada.   | `TransferView`            |
-| `Port`           | Capacidad que exige la aplicación.  | `FundsAuthorityPort`      |
-| `Repository`     | Acceso abstracto a datos propios.   | `TransferRepository`      |
-| `Service`        | Orquestación de un caso de uso.     | `IncomingTransferService` |
-| `Request`        | Solicitud tipada hacia una autoridad. | `FundsExecutionRequest` |
-| `DTO Result`     | Respuesta tipada de una autoridad.    | `FundsExecutionResult`  |
+| Sufijo o paquete | Significado                           | Ejemplo                   |
+|------------------|---------------------------------------|---------------------------|
+| `UseCase`        | Contrato de entrada.                  | `CancelTransferUseCase`   |
+| `Command`        | Datos de una actuación persistente.   | `ReturnTransferCommand`   |
+| `Query`          | Datos de una consulta sin efectos.    | `GetTransferQuery`        |
+| `Result`         | Resultado de una actuación.           | `TransferActionResult`    |
+| `View`           | Proyección de lectura autorizada.     | `TransferView`            |
+| `Port`           | Capacidad que exige la aplicación.    | `FundsAuthorityPort`      |
+| `Repository`     | Acceso abstracto a datos propios.     | `TransferRepository`      |
+| `Service`        | Orquestación de un caso de uso.       | `IncomingTransferService` |
+| `Request`        | Solicitud tipada hacia una autoridad. | `FundsExecutionRequest`   |
+| `DTO Result`     | Respuesta tipada de una autoridad.    | `FundsExecutionResult`    |
 
 ## 5. Puertos de entrada: `application/port/in/`
 
 Un puerto de entrada define **qué puede pedir un consumidor**, no cómo llega el HTTP o el mensaje.
 
-| Interfaz | Operación sugerida | Entrada | Resultado |
-| --- | --- | --- | --- |
-| `ExecuteInternalTransferUseCase` | `execute(...)` | `ExecuteInternalTransferCommand` | `TransferActionResult` |
-| `SendOutgoingTransferUseCase` | `execute(...)` | `SendOutgoingTransferCommand` | `TransferActionResult` |
-| `ReceiveIncomingTransferUseCase` | `execute(...)` | `ReceiveIncomingTransferCommand` | `TransferActionResult` |
-| `CancelTransferUseCase` | `execute(...)` | `CancelTransferCommand` | `TransferActionResult` |
-| `ReturnTransferUseCase` | `execute(...)` | `ReturnTransferCommand` | `TransferActionResult` |
-| `GetTransferUseCase` | `get(...)` | `GetTransferQuery` | `TransferView` |
-| `GetTransferActionUseCase` | `get(...)` | `GetTransferActionQuery` | `TransferActionView` |
-| `SearchTransfersUseCase` | `search(...)` | `SearchTransfersQuery` | `TransferSearchResult` |
-| `RecoverRemoteStepUseCase` | `recover(...)` | Identidad del paso original | Resultado de recuperación |
-| `IncorporateExternalResultUseCase` | `incorporate(...)` | Resultado con procedencia | Resultado de incorporación |
+| Interfaz                           | Operación sugerida | Entrada                          | Resultado                  |
+|------------------------------------|--------------------|----------------------------------|----------------------------|
+| `ExecuteInternalTransferUseCase`   | `execute(...)`     | `ExecuteInternalTransferCommand` | `TransferActionResult`     |
+| `SendOutgoingTransferUseCase`      | `execute(...)`     | `SendOutgoingTransferCommand`    | `TransferActionResult`     |
+| `ReceiveIncomingTransferUseCase`   | `execute(...)`     | `ReceiveIncomingTransferCommand` | `TransferActionResult`     |
+| `CancelTransferUseCase`            | `execute(...)`     | `CancelTransferCommand`          | `TransferActionResult`     |
+| `ReturnTransferUseCase`            | `execute(...)`     | `ReturnTransferCommand`          | `TransferActionResult`     |
+| `GetTransferUseCase`               | `get(...)`         | `GetTransferQuery`               | `TransferView`             |
+| `GetTransferActionUseCase`         | `get(...)`         | `GetTransferActionQuery`         | `TransferActionView`       |
+| `SearchTransfersUseCase`           | `search(...)`      | `SearchTransfersQuery`           | `TransferSearchResult`     |
+| `RecoverRemoteStepUseCase`         | `recover(...)`     | Identidad del paso original      | Resultado de recuperación  |
+| `IncorporateExternalResultUseCase` | `incorporate(...)` | Resultado con procedencia        | Resultado de incorporación |
 
 El nombre `execute(...)` puede repetirse en interfaces diferentes: la interfaz aporta el significado del caso.
 
@@ -265,14 +265,14 @@ No aceptar como verdadero un `actorId` incluido libremente por el consumidor.
 
 ### 6.3. Comandos de negocio
 
-| Comando | Datos principales | Datos condicionales |
-| --- | --- | --- |
-| `ExecuteInternalTransferCommand` | Origen, destino aceptado, principal, moneda, autorización. | Cargos, cambio. |
-| `SendOutgoingTransferCommand` | Origen, destino externo, mecanismo, importe, autorización. | Cargos, cambio. |
-| `ReceiveIncomingTransferCommand` | Identidad externa, destino, principal, mensaje y evidencia. | Antecedentes. |
-| `CancelTransferCommand` | `transferId`, motivo, contexto y autorización. | Intercambio relacionado. |
-| `ReturnTransferCommand` | `transferId`, `returnEffectId`, importe, destino, fundamento. | Antecedentes. |
-| `IncorporateExternalResultCommand` | Actuación, fuente, hecho, versión y evidencias. | Resultado específico. |
+| Comando                            | Datos principales                                             | Datos condicionales      |
+|------------------------------------|---------------------------------------------------------------|--------------------------|
+| `ExecuteInternalTransferCommand`   | Origen, destino aceptado, principal, moneda, autorización.    | Cargos, cambio.          |
+| `SendOutgoingTransferCommand`      | Origen, destino externo, mecanismo, importe, autorización.    | Cargos, cambio.          |
+| `ReceiveIncomingTransferCommand`   | Identidad externa, destino, principal, mensaje y evidencia.   | Antecedentes.            |
+| `CancelTransferCommand`            | `transferId`, motivo, contexto y autorización.                | Intercambio relacionado. |
+| `ReturnTransferCommand`            | `transferId`, `returnEffectId`, importe, destino, fundamento. | Antecedentes.            |
+| `IncorporateExternalResultCommand` | Actuación, fuente, hecho, versión y evidencias.               | Resultado específico.    |
 
 **Regla de diseño:** cada comando conserva los campos exactos necesarios para su modalidad.
 No utilizar un único comando enorme con decenas de atributos opcionales que permitan combinaciones inválidas.
@@ -856,15 +856,15 @@ La aplicación diferencia aceptación durable, actuación remota, acreditación 
 
 ## 17. Errores: frontera empresarial y frontera técnica
 
-| Situación | Decisión de aplicación | Tratamiento en el adaptador |
-| --- | --- | --- |
-| Contenido incompatible | No ejecutar otro efecto; informar conflicto. | Respuesta de conflicto. |
-| Versión incompatible | Conservar el original; no sobrescribir. | Respuesta de conflicto. |
-| Destino distinto del aceptado | Rechazar modificación material no autorizada. | Error de negocio. |
-| Principal o remanente insuficiente | No comprometer importe inválido. | Error de negocio. |
-| Dependencia indisponible antes de aceptar | No fingir actuación durable. | Error de disponibilidad. |
-| Solicitud durable, resultado remoto incierto | Guardar seguimiento y misma identidad. | Resultado consultable. |
-| Falta de permiso | No exponer ni modificar el objeto. | Error de autorización. |
+| Situación                                    | Decisión de aplicación                        | Tratamiento en el adaptador |
+|----------------------------------------------|-----------------------------------------------|-----------------------------|
+| Contenido incompatible                       | No ejecutar otro efecto; informar conflicto.  | Respuesta de conflicto.     |
+| Versión incompatible                         | Conservar el original; no sobrescribir.       | Respuesta de conflicto.     |
+| Destino distinto del aceptado                | Rechazar modificación material no autorizada. | Error de negocio.           |
+| Principal o remanente insuficiente           | No comprometer importe inválido.              | Error de negocio.           |
+| Dependencia indisponible antes de aceptar    | No fingir actuación durable.                  | Error de disponibilidad.    |
+| Solicitud durable, resultado remoto incierto | Guardar seguimiento y misma identidad.        | Resultado consultable.      |
+| Falta de permiso                             | No exponer ni modificar el objeto.            | Error de autorización.      |
 
 Los adaptadores HTTP pueden convertir estas situaciones a Problem Details y códigos 400, 403, 409, 422 o 503,
 según el contrato. Las clases de dominio y los puertos no deben depender de respuestas HTTP.
@@ -951,19 +951,19 @@ No obliga a lanzar todas las excepciones desde todos los servicios ni a crear je
 
 ### 19.3. Catálogo de excepciones
 
-| Excepción | Significado | Responsabilidad |
-| --- | --- | --- |
-| `ApplicationException` | Excepción base | Unificar errores propios de aplicación. |
-| `InvalidActionContextException` | Contexto inválido | Impedir actuaciones sin contexto válido. |
-| `TransferNotFoundException` | Transferencia inexistente | Identificar una transferencia no encontrada. |
-| `TransferActionNotFoundException` | Actuación inexistente | Identificar una actuación no encontrada. |
-| `TransferAccessDeniedException` | Acceso denegado | Impedir una actuación sin autorización. |
-| `IdempotencyConflictException` | Conflicto de idempotencia | Proteger la identidad de una petición. |
-| `TransferIdentityConflictException` | Conflicto de identidad | Proteger la identidad empresarial. |
-| `TransferVersionConflictException` | Conflicto de versión | Impedir modificaciones desactualizadas. |
-| `ExternalAuthorityUnavailableException` | Autoridad indisponible | Identificar una dependencia no accesible. |
-| `ExternalResultConflictException` | Resultado contradictorio | Identificar evidencias externas incompatibles. |
-| `RecoveryContextMissingException` | Contexto de recuperación ausente | Impedir recuperar sin identidad original. |
+| Excepción                               | Significado                      | Responsabilidad                                |
+|-----------------------------------------|----------------------------------|------------------------------------------------|
+| `ApplicationException`                  | Excepción base                   | Unificar errores propios de aplicación.        |
+| `InvalidActionContextException`         | Contexto inválido                | Impedir actuaciones sin contexto válido.       |
+| `TransferNotFoundException`             | Transferencia inexistente        | Identificar una transferencia no encontrada.   |
+| `TransferActionNotFoundException`       | Actuación inexistente            | Identificar una actuación no encontrada.       |
+| `TransferAccessDeniedException`         | Acceso denegado                  | Impedir una actuación sin autorización.        |
+| `IdempotencyConflictException`          | Conflicto de idempotencia        | Proteger la identidad de una petición.         |
+| `TransferIdentityConflictException`     | Conflicto de identidad           | Proteger la identidad empresarial.             |
+| `TransferVersionConflictException`      | Conflicto de versión             | Impedir modificaciones desactualizadas.        |
+| `ExternalAuthorityUnavailableException` | Autoridad indisponible           | Identificar una dependencia no accesible.      |
+| `ExternalResultConflictException`       | Resultado contradictorio         | Identificar evidencias externas incompatibles. |
+| `RecoveryContextMissingException`       | Contexto de recuperación ausente | Impedir recuperar sin identidad original.      |
 
 ### 19.4. `ApplicationException` — Excepción base
 
@@ -971,13 +971,13 @@ No obliga a lanzar todas las excepciones desde todos los servicios ni a crear je
 
 **Responsabilidad:** proporcionar una representación común para los errores originados en `application/`.
 
-| Atributo | Tipo Java | Responsabilidad |
-| --- | --- | --- |
-| `errorCode` | `String` | Código estable del error de aplicación. |
-| `message` | `String` | Descripción del problema. |
-| `actionId` | `UUID` | Actuación relacionada, cuando existe. |
-| `transferId` | `UUID` | Transferencia relacionada, cuando existe. |
-| `cause` | `Throwable` | Causa técnica original, cuando corresponde. |
+| Atributo     | Tipo Java   | Responsabilidad                             |
+|--------------|-------------|---------------------------------------------|
+| `errorCode`  | `String`    | Código estable del error de aplicación.     |
+| `message`    | `String`    | Descripción del problema.                   |
+| `actionId`   | `UUID`      | Actuación relacionada, cuando existe.       |
+| `transferId` | `UUID`      | Transferencia relacionada, cuando existe.   |
+| `cause`      | `Throwable` | Causa técnica original, cuando corresponde. |
 
 **Reglas:**
 
@@ -1010,11 +1010,11 @@ relacionarla o comprobar su legitimidad.
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `actionId` | Identificar la actuación cuando está disponible. |
-| `operationId` | Reconocer la operación empresarial relacionada. |
-| `errorCode` | Distinguir qué condición del contexto falló. |
+| Dato          | Propósito                                        |
+|---------------|--------------------------------------------------|
+| `actionId`    | Identificar la actuación cuando está disponible. |
+| `operationId` | Reconocer la operación empresarial relacionada.  |
+| `errorCode`   | Distinguir qué condición del contexto falló.     |
 
 **Casos de uso:** comandos persistentes y continuaciones internas.
 
@@ -1040,10 +1040,10 @@ No sustituye las validaciones de formato que corresponden al adaptador de entrad
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `transferId` | Referencia buscada. |
-| `errorCode` | Identificar que no se encontró la transferencia. |
+| Dato         | Propósito                                        |
+|--------------|--------------------------------------------------|
+| `transferId` | Referencia buscada.                              |
+| `errorCode`  | Identificar que no se encontró la transferencia. |
 
 **Casos de uso:**
 
@@ -1072,9 +1072,9 @@ Una transferencia existente pero inaccesible requiere aplicar la política de se
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `actionId` | Identificar la actuación buscada. |
+| Dato        | Propósito                            |
+|-------------|--------------------------------------|
+| `actionId`  | Identificar la actuación buscada.    |
 | `errorCode` | Distinguir la ausencia de actuación. |
 
 **Caso de uso:** `GetTransferAction`.
@@ -1103,11 +1103,11 @@ En ese contexto puede existir una inconsistencia que necesita investigación.
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `actionId` | Actuación que requiere autorización. |
+| Dato         | Propósito                            |
+|--------------|--------------------------------------|
+| `actionId`   | Actuación que requiere autorización. |
 | `transferId` | Objeto afectado, cuando corresponde. |
-| `errorCode` | Identificar la denegación de acceso. |
+| `errorCode`  | Identificar la denegación de acceso. |
 
 **Casos de uso:** todos, según la capacidad solicitada.
 
@@ -1135,10 +1135,10 @@ La aplicación coordina esas comprobaciones, pero no reemplaza sus decisiones.
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `actionId` | Actuación original, cuando puede identificarse. |
-| `errorCode` | Identificar el conflicto de idempotencia. |
+| Dato        | Propósito                                       |
+|-------------|-------------------------------------------------|
+| `actionId`  | Actuación original, cuando puede identificarse. |
+| `errorCode` | Identificar el conflicto de idempotencia.       |
 
 **Casos de uso:** comandos persistentes.
 
@@ -1170,11 +1170,11 @@ La excepción no representa una transferencia rechazada por Fondos.
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `actionId` | Actuación que produjo el conflicto. |
+| Dato         | Propósito                                   |
+|--------------|---------------------------------------------|
+| `actionId`   | Actuación que produjo el conflicto.         |
 | `transferId` | Transferencia original, cuando corresponde. |
-| `errorCode` | Identificar el conflicto de identidad. |
+| `errorCode`  | Identificar el conflicto de identidad.      |
 
 **Casos de uso:**
 
@@ -1208,12 +1208,12 @@ La protección definitiva contra duplicaciones debe existir también en PostgreS
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `transferId` | Transferencia afectada. |
-| `actionId` | Actuación que intentó modificarla. |
-| `expectedVersion` | Versión esperada por el solicitante. |
-| `actualVersion` | Versión encontrada, cuando está disponible. |
+| Dato              | Propósito                                   |
+|-------------------|---------------------------------------------|
+| `transferId`      | Transferencia afectada.                     |
+| `actionId`        | Actuación que intentó modificarla.          |
+| `expectedVersion` | Versión esperada por el solicitante.        |
+| `actualVersion`   | Versión encontrada, cuando está disponible. |
 
 **Casos de uso:**
 
@@ -1245,12 +1245,12 @@ interrumpirse la actuación sin dejar un efecto externo incierto.
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `actionId` | Actuación afectada, cuando existe. |
+| Dato            | Propósito                              |
+|-----------------|----------------------------------------|
+| `actionId`      | Actuación afectada, cuando existe.     |
 | `authorityCode` | Identificar la autoridad indisponible. |
-| `operationCode` | Identificar la capacidad solicitada. |
-| `cause` | Conservar el error técnico original. |
+| `operationCode` | Identificar la capacidad solicitada.   |
+| `cause`         | Conservar el error técnico original.   |
 
 **Casos de uso:** operaciones que requieren comprobaciones de autoridades externas.
 
@@ -1283,13 +1283,13 @@ No debe utilizarse esta excepción para descartar ese seguimiento.
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `transferId` | Transferencia afectada. |
-| `actionId` | Actuación relacionada. |
-| `authorityCode` | Autoridad que informó el resultado. |
-| `sourceReference` | Referencia del hecho recibido. |
-| `errorCode` | Tipo de contradicción identificada. |
+| Dato              | Propósito                           |
+|-------------------|-------------------------------------|
+| `transferId`      | Transferencia afectada.             |
+| `actionId`        | Actuación relacionada.              |
+| `authorityCode`   | Autoridad que informó el resultado. |
+| `sourceReference` | Referencia del hecho recibido.      |
+| `errorCode`       | Tipo de contradicción identificada. |
 
 **Casos de uso:**
 
@@ -1323,11 +1323,11 @@ para consultar su efecto original.
 
 **Información relevante:**
 
-| Dato | Propósito |
-| --- | --- |
-| `transferId` | Transferencia relacionada. |
-| `actionId` | Actuación original, cuando se conoce. |
-| `componentCode` | Componente que necesita recuperación. |
+| Dato               | Propósito                                        |
+|--------------------|--------------------------------------------------|
+| `transferId`       | Transferencia relacionada.                       |
+| `actionId`         | Actuación original, cuando se conoce.            |
+| `componentCode`    | Componente que necesita recuperación.            |
 | `missingReference` | Identificar la referencia indispensable ausente. |
 
 **Casos de uso:**
@@ -1346,19 +1346,19 @@ Una referencia ausente no autoriza a liberar fondos ni a declarar rechazado un e
 
 ### 19.15. Relación entre excepciones y casos de uso
 
-| Caso de uso | Excepciones de aplicación relevantes |
-| --- | --- |
-| `ExecuteInternalTransfer` | Contexto, acceso, idempotencia, identidad, autoridad. |
-| `SendOutgoingTransfer` | Contexto, acceso, idempotencia, identidad, autoridad. |
-| `ReceiveIncomingTransfer` | Contexto, identidad, idempotencia, autoridad, resultado externo. |
-| `CancelTransfer` | Transferencia inexistente, acceso, versión, idempotencia, autoridad. |
-| `ReturnTransfer` | Transferencia inexistente, acceso, versión, idempotencia, autoridad. |
-| `GetTransfer` | Transferencia inexistente, acceso. |
-| `GetTransferAction` | Actuación inexistente, acceso. |
-| `SearchTransfers` | Acceso, contexto inválido. |
-| `RecoverRemoteStep` | Contexto de recuperación, versión, resultado externo. |
-| `IncorporateExternalResult` | Contexto, versión, resultado externo. |
-| `ResumeTransferWork` | Contexto de recuperación, versión, resultado externo. |
+| Caso de uso                 | Excepciones de aplicación relevantes                                 |
+|-----------------------------|----------------------------------------------------------------------|
+| `ExecuteInternalTransfer`   | Contexto, acceso, idempotencia, identidad, autoridad.                |
+| `SendOutgoingTransfer`      | Contexto, acceso, idempotencia, identidad, autoridad.                |
+| `ReceiveIncomingTransfer`   | Contexto, identidad, idempotencia, autoridad, resultado externo.     |
+| `CancelTransfer`            | Transferencia inexistente, acceso, versión, idempotencia, autoridad. |
+| `ReturnTransfer`            | Transferencia inexistente, acceso, versión, idempotencia, autoridad. |
+| `GetTransfer`               | Transferencia inexistente, acceso.                                   |
+| `GetTransferAction`         | Actuación inexistente, acceso.                                       |
+| `SearchTransfers`           | Acceso, contexto inválido.                                           |
+| `RecoverRemoteStep`         | Contexto de recuperación, versión, resultado externo.                |
+| `IncorporateExternalResult` | Contexto, versión, resultado externo.                                |
+| `ResumeTransferWork`        | Contexto de recuperación, versión, resultado externo.                |
 
 Esta tabla identifica posibilidades, no obliga a lanzar todas las excepciones en cada recorrido.
 
@@ -1366,16 +1366,16 @@ Los resultados empresariales esperados deben seguir expresándose mediante los m
 
 ### 19.16. Diferencia entre excepciones de dominio y aplicación
 
-| Responsabilidad | Ubicación | Ejemplo |
-| --- | --- | --- |
-| Importe inválido | `domain/exception/` | Principal que viola una invariante. |
-| Transición empresarial prohibida | `domain/exception/` | Cambio incompatible con el estado. |
-| Devolución superior al remanente | `domain/exception/` | Importe que supera el principal disponible. |
-| Actuación inexistente | `application/exception/` | Consulta sin `actionId` registrado. |
-| Conflicto de idempotencia | `application/exception/` | Misma clave, diferente contenido. |
-| Conflicto de identidad empresarial | `application/exception/` | Misma referencia, distinto contenido. |
-| Modificación concurrente | `application/exception/` | Versión esperada incompatible. |
-| Dependencia no disponible | `application/exception/` | Autoridad necesaria inaccesible. |
+| Responsabilidad                    | Ubicación                | Ejemplo                                     |
+|------------------------------------|--------------------------|---------------------------------------------|
+| Importe inválido                   | `domain/exception/`      | Principal que viola una invariante.         |
+| Transición empresarial prohibida   | `domain/exception/`      | Cambio incompatible con el estado.          |
+| Devolución superior al remanente   | `domain/exception/`      | Importe que supera el principal disponible. |
+| Actuación inexistente              | `application/exception/` | Consulta sin `actionId` registrado.         |
+| Conflicto de idempotencia          | `application/exception/` | Misma clave, diferente contenido.           |
+| Conflicto de identidad empresarial | `application/exception/` | Misma referencia, distinto contenido.       |
+| Modificación concurrente           | `application/exception/` | Versión esperada incompatible.              |
+| Dependencia no disponible          | `application/exception/` | Autoridad necesaria inaccesible.            |
 
 **Reglas de separación:**
 
@@ -1390,18 +1390,18 @@ Los resultados empresariales esperados deben seguir expresándose mediante los m
 
 No todos los problemas requieren lanzar una excepción.
 
-| Situación | Tratamiento |
-| --- | --- |
-| Misma clave, distinto contenido | `IdempotencyConflictException`. |
-| Transferencia inexistente | `TransferNotFoundException`. |
-| Actor sin facultades | `TransferAccessDeniedException`. |
-| Versión incompatible | `TransferVersionConflictException`. |
-| Autoridad indisponible antes de la actuación durable | Error de disponibilidad. |
-| Fondos ejecutó, pero se perdió la respuesta | Resultado incierto y recuperación. |
-| Compensación recibió, pero no confirmó crédito | Seguimiento de acreditación pendiente. |
-| Devolución ejecutada con respuesta perdida | Recuperar `returnEffectId` original. |
-| Mensaje externo contradictorio | Conservar evidencia e investigar. |
-| Transferencia rechazada definitivamente | Registrar rechazo empresarial comprobado. |
+| Situación                                            | Tratamiento                               |
+|------------------------------------------------------|-------------------------------------------|
+| Misma clave, distinto contenido                      | `IdempotencyConflictException`.           |
+| Transferencia inexistente                            | `TransferNotFoundException`.              |
+| Actor sin facultades                                 | `TransferAccessDeniedException`.          |
+| Versión incompatible                                 | `TransferVersionConflictException`.       |
+| Autoridad indisponible antes de la actuación durable | Error de disponibilidad.                  |
+| Fondos ejecutó, pero se perdió la respuesta          | Resultado incierto y recuperación.        |
+| Compensación recibió, pero no confirmó crédito       | Seguimiento de acreditación pendiente.    |
+| Devolución ejecutada con respuesta perdida           | Recuperar `returnEffectId` original.      |
+| Mensaje externo contradictorio                       | Conservar evidencia e investigar.         |
+| Transferencia rechazada definitivamente              | Registrar rechazo empresarial comprobado. |
 
 **Regla fundamental:** los resultados inciertos no se resuelven lanzando una excepción y descartando la actuación.
 
@@ -1440,18 +1440,18 @@ Las excepciones de `application/` no conocen HTTP, Kafka ni los mecanismos de tr
 
 Los adaptadores son responsables de traducirlas al contrato correspondiente.
 
-| Error de aplicación | Interpretación para el consumidor |
-| --- | --- |
-| `InvalidActionContextException` | Contexto requerido ausente o incompatible. |
-| `TransferNotFoundException` | Transferencia no encontrada. |
-| `TransferActionNotFoundException` | Actuación no encontrada. |
-| `TransferAccessDeniedException` | Acceso no autorizado para la actuación. |
-| `IdempotencyConflictException` | Petición incompatible con otra registrada. |
-| `TransferIdentityConflictException` | Identidad empresarial en conflicto. |
-| `TransferVersionConflictException` | Modificación incompatible con la versión vigente. |
-| `ExternalAuthorityUnavailableException` | Dependencia requerida no disponible. |
-| `ExternalResultConflictException` | Resultado externo incompatible que requiere resolución. |
-| `RecoveryContextMissingException` | Recuperación impedida por falta de información original. |
+| Error de aplicación                     | Interpretación para el consumidor                        |
+|-----------------------------------------|----------------------------------------------------------|
+| `InvalidActionContextException`         | Contexto requerido ausente o incompatible.               |
+| `TransferNotFoundException`             | Transferencia no encontrada.                             |
+| `TransferActionNotFoundException`       | Actuación no encontrada.                                 |
+| `TransferAccessDeniedException`         | Acceso no autorizado para la actuación.                  |
+| `IdempotencyConflictException`          | Petición incompatible con otra registrada.               |
+| `TransferIdentityConflictException`     | Identidad empresarial en conflicto.                      |
+| `TransferVersionConflictException`      | Modificación incompatible con la versión vigente.        |
+| `ExternalAuthorityUnavailableException` | Dependencia requerida no disponible.                     |
+| `ExternalResultConflictException`       | Resultado externo incompatible que requiere resolución.  |
+| `RecoveryContextMissingException`       | Recuperación impedida por falta de información original. |
 
 El adaptador HTTP puede utilizar códigos y Problem Details según el contrato técnico.
 
@@ -1462,12 +1462,12 @@ La excepción no debe cambiar de significado según el transporte.
 
 Cada excepción debe permitir identificar el problema sin exponer información bancaria sensible.
 
-| Señal | Qué registrar |
-| --- | --- |
-| Log estructurado | Código del error, caso de uso, actuación y correlación. |
-| Traza | Operación afectada y dependencia involucrada. |
-| Métrica | Cantidad de errores por código y caso de uso. |
-| Seguimiento durable | Actuación y componente que requieren investigación. |
+| Señal               | Qué registrar                                           |
+|---------------------|---------------------------------------------------------|
+| Log estructurado    | Código del error, caso de uso, actuación y correlación. |
+| Traza               | Operación afectada y dependencia involucrada.           |
+| Métrica             | Cantidad de errores por código y caso de uso.           |
+| Seguimiento durable | Actuación y componente que requieren investigación.     |
 
 **Reglas:**
 
@@ -1483,16 +1483,16 @@ Un timeout no debe contabilizarse como transferencia rechazada.
 
 El caso de uso recibe una instrucción para transferir dinero entre dos cuentas internas.
 
-| Situación | Comportamiento |
-| --- | --- |
-| Falta el contexto de actuación obligatorio | Interrumpir por contexto inválido. |
-| La clave de idempotencia existe con otro contenido | Interrumpir por conflicto de idempotencia. |
-| La referencia empresarial existe con otra instrucción | Interrumpir por conflicto de identidad. |
-| El actor no tiene facultades | Interrumpir por acceso denegado. |
-| Cuentas no admite una comprobación requerida | No continuar sin una respuesta válida. |
-| Fondos confirma débito y crédito | Registrar el resultado monetario confirmado. |
-| Fondos rechaza definitivamente la ejecución | Registrar el rechazo comprobado. |
-| Fondos ejecuta, pero pierde la respuesta | Conservar incertidumbre y recuperar el efecto original. |
+| Situación                                             | Comportamiento                                          |
+|-------------------------------------------------------|---------------------------------------------------------|
+| Falta el contexto de actuación obligatorio            | Interrumpir por contexto inválido.                      |
+| La clave de idempotencia existe con otro contenido    | Interrumpir por conflicto de idempotencia.              |
+| La referencia empresarial existe con otra instrucción | Interrumpir por conflicto de identidad.                 |
+| El actor no tiene facultades                          | Interrumpir por acceso denegado.                        |
+| Cuentas no admite una comprobación requerida          | No continuar sin una respuesta válida.                  |
+| Fondos confirma débito y crédito                      | Registrar el resultado monetario confirmado.            |
+| Fondos rechaza definitivamente la ejecución           | Registrar el rechazo comprobado.                        |
+| Fondos ejecuta, pero pierde la respuesta              | Conservar incertidumbre y recuperar el efecto original. |
 
 El caso de uso no necesita lanzar una excepción para representar una transferencia completada o rechazada.
 
@@ -1500,20 +1500,20 @@ Tampoco debe utilizar `ExternalAuthorityUnavailableException` como sustituto de 
 
 ### 19.22. Pruebas de excepciones de aplicación
 
-| Escenario | Comportamiento esperado |
-| --- | --- |
-| Contexto obligatorio ausente | No comienza una actuación económica. |
-| Transferencia inexistente | Excepción de transferencia no encontrada. |
-| Actuación inexistente | Excepción de actuación no encontrada. |
-| Acceso no autorizado | No expone información ni ejecuta efectos. |
-| Misma clave con otro contenido | Conflicto sin segunda ejecución. |
-| Identidad externa duplicada con otro contenido | Conflicto sin segundo crédito. |
-| Versión incompatible | No sobrescribe cambios confirmados. |
-| Autoridad indisponible antes de la admisión durable | No inventa un resultado. |
-| Timeout después de solicitar un efecto | Conserva identidad y seguimiento. |
-| Resultado externo contradictorio | Conserva evidencia para investigación. |
-| Recuperación sin referencia original | No genera otra actuación económica. |
-| Fallo local después de un posible efecto remoto | No asume reversión del efecto externo. |
+| Escenario                                           | Comportamiento esperado                   |
+|-----------------------------------------------------|-------------------------------------------|
+| Contexto obligatorio ausente                        | No comienza una actuación económica.      |
+| Transferencia inexistente                           | Excepción de transferencia no encontrada. |
+| Actuación inexistente                               | Excepción de actuación no encontrada.     |
+| Acceso no autorizado                                | No expone información ni ejecuta efectos. |
+| Misma clave con otro contenido                      | Conflicto sin segunda ejecución.          |
+| Identidad externa duplicada con otro contenido      | Conflicto sin segundo crédito.            |
+| Versión incompatible                                | No sobrescribe cambios confirmados.       |
+| Autoridad indisponible antes de la admisión durable | No inventa un resultado.                  |
+| Timeout después de solicitar un efecto              | Conserva identidad y seguimiento.         |
+| Resultado externo contradictorio                    | Conserva evidencia para investigación.    |
+| Recuperación sin referencia original                | No genera otra actuación económica.       |
+| Fallo local después de un posible efecto remoto     | No asume reversión del efecto externo.    |
 
 Las pruebas deben comprobar tanto la excepción producida como la ausencia de efectos indebidos.
 
@@ -1533,15 +1533,15 @@ empresarial se explica en español.
 
 La carpeta no reemplaza `application/command/`, `application/query/` ni `application/result/`:
 
-| Elemento | Qué representa | Quién lo utiliza |
-| --- | --- | --- |
-| `Command` | Solicitud de un caso de uso. | Puerto de entrada y servicio. |
-| `Query` | Petición de una consulta de aplicación. | Puerto de entrada y servicio. |
-| `Result` y `View` | Respuesta del caso de uso al consumidor. | Servicio y puerto de entrada. |
-| `dto/<autoridad>/*Request` | Información enviada a una autoridad. | Servicio y puerto de salida. |
-| `dto/<autoridad>/*Result` | Respuesta de una autoridad. | Puerto de salida y servicio. |
-| `dto/persistence/*` | Datos propios de soporte que requieren un contrato. | Servicios y repositorios locales. |
-| Entidad u objeto de valor del dominio | Estado y conceptos empresariales protegidos. | Dominio y repositorios. |
+| Elemento                              | Qué representa                                      | Quién lo utiliza                  |
+|---------------------------------------|-----------------------------------------------------|-----------------------------------|
+| `Command`                             | Solicitud de un caso de uso.                        | Puerto de entrada y servicio.     |
+| `Query`                               | Petición de una consulta de aplicación.             | Puerto de entrada y servicio.     |
+| `Result` y `View`                     | Respuesta del caso de uso al consumidor.            | Servicio y puerto de entrada.     |
+| `dto/<autoridad>/*Request`            | Información enviada a una autoridad.                | Servicio y puerto de salida.      |
+| `dto/<autoridad>/*Result`             | Respuesta de una autoridad.                         | Puerto de salida y servicio.      |
+| `dto/persistence/*`                   | Datos propios de soporte que requieren un contrato. | Servicios y repositorios locales. |
+| Entidad u objeto de valor del dominio | Estado y conceptos empresariales protegidos.        | Dominio y repositorios.           |
 
 **Regla central:** cada puerto recibe y devuelve el tipo que expresa su responsabilidad. No todos necesitan DTO.
 
@@ -1615,16 +1615,16 @@ Si un modelo apropiado ya existe en `domain/` o en `application/dto/`, se reutil
 
 ### 20.3. Criterios para elegir parámetros y retornos
 
-| Necesidad | Entrada | Retorno |
-| --- | --- | --- |
-| Guardar un agregado | `Transfer` | `Transfer` o `void`, según el contrato. |
-| Buscar por identidad simple | `UUID transferId` | `Optional<Transfer>`. |
-| Buscar por identidad compuesta | Objeto tipado de identidad. | `Optional<Transfer>`. |
-| Recuperar varias coincidencias | Criterio tipado de búsqueda. | `List<T>` o resultado tipado. |
-| Comprobar una autoridad | `*Request` específico. | `*Result` específico. |
-| Consultar una autoridad por un ID | Identificador o consulta tipada. | Resultado con hechos y evidencias. |
-| Ejecutar un efecto externo | `*Request` con identidad estable. | Resultado tipado y recuperable. |
-| Confirmar una unidad local | Función transaccional tipada. | Resultado de la función. |
+| Necesidad                         | Entrada                           | Retorno                                 |
+|-----------------------------------|-----------------------------------|-----------------------------------------|
+| Guardar un agregado               | `Transfer`                        | `Transfer` o `void`, según el contrato. |
+| Buscar por identidad simple       | `UUID transferId`                 | `Optional<Transfer>`.                   |
+| Buscar por identidad compuesta    | Objeto tipado de identidad.       | `Optional<Transfer>`.                   |
+| Recuperar varias coincidencias    | Criterio tipado de búsqueda.      | `List<T>` o resultado tipado.           |
+| Comprobar una autoridad           | `*Request` específico.            | `*Result` específico.                   |
+| Consultar una autoridad por un ID | Identificador o consulta tipada.  | Resultado con hechos y evidencias.      |
+| Ejecutar un efecto externo        | `*Request` con identidad estable. | Resultado tipado y recuperable.         |
+| Confirmar una unidad local        | Función transaccional tipada.     | Resultado de la función.                |
 
 **No está prohibido un `UUID` aislado**: es adecuado cuando identifica por sí solo lo que se consulta.
 Lo que se evita es descomponer una solicitud empresarial completa en numerosos parámetros sueltos.
@@ -1641,9 +1641,13 @@ Ejemplo de firmas para la persistencia del agregado:
 
 ```java
 Transfer save(Transfer transfer);
+
 Optional<Transfer> findById(UUID transferId);
+
 Optional<Transfer> findByOriginIdentity(TransferOriginIdentity identity);
+
 Optional<Transfer> findByExternalIdentity(ExternalOperationReference identity);
+
 Optional<Transfer> lockForUpdate(UUID transferId);
 ```
 
@@ -1655,14 +1659,14 @@ Un método `find...` no sustituye una restricción única ni un bloqueo requerid
 
 Otros repositorios guardan **registros propios de coordinación**, que no son necesariamente entidades de `domain/`:
 
-| Puerto | Objeto tipado propuesto | Responsabilidad |
-| --- | --- | --- |
-| `TransferActionRepository` | `TransferActionSnapshot` | Actuación y resultado recuperable. |
-| `IdempotencyRepository` | `IdempotencyRecord` | Clave, huella y actuación original. |
-| `TransferHistoryRepository` | `TransferHistoryEntry` | Historia y evidencia de cada cambio. |
-| `TransferOutboxRepository` | `OutboxEvent` | Evento durable antes de publicar. |
-| `TransferInboxRepository` | `InboxMessage` | Mensaje recibido y deduplicación. |
-| `RecoveryJobRepository` | `RecoveryJob` | Trabajo recuperable y próximo control. |
+| Puerto                      | Objeto tipado propuesto  | Responsabilidad                        |
+|-----------------------------|--------------------------|----------------------------------------|
+| `TransferActionRepository`  | `TransferActionSnapshot` | Actuación y resultado recuperable.     |
+| `IdempotencyRepository`     | `IdempotencyRecord`      | Clave, huella y actuación original.    |
+| `TransferHistoryRepository` | `TransferHistoryEntry`   | Historia y evidencia de cada cambio.   |
+| `TransferOutboxRepository`  | `OutboxEvent`            | Evento durable antes de publicar.      |
+| `TransferInboxRepository`   | `InboxMessage`           | Mensaje recibido y deduplicación.      |
+| `RecoveryJobRepository`     | `RecoveryJob`            | Trabajo recuperable y próximo control. |
 
 Estos tipos son modelos de aplicación, **no entidades JPA** ni copias de las tablas físicas.
 Sus campos se ajustan a las identidades, evidencias, versiones y restricciones realmente necesarias.
@@ -1678,14 +1682,14 @@ Su contrato debe permitir ejecutar una operación tipada y confirmar o revertir 
 Cada autoridad conserva su propia decisión empresarial. El puerto define la solicitud y la respuesta que
 Transferencias necesita; el adaptador transforma esos objetos al protocolo concreto del simulador.
 
-| Puerto | Método orientativo | Entrada | Retorno |
-| --- | --- | --- | --- |
-| `AccountAuthorityPort` | `checkAccount(...)` | `AccountCheckRequest` | `AccountCheckResult` |
-| `DestinationResolutionPort` | `resolveDestination` | `DestinationResolutionRequest` | `DestinationResolutionResult` |
-| `RepresentationAuthorityPort` | `checkRepresentation` | `RepresentationCheckRequest` | `RepresentationCheckResult` |
-| `BusinessControlsPort` | `checkControls(...)` | `BusinessControlsRequest` | `BusinessControlsResult` |
-| `CommercialConditionsPort` | `determineConditions` | `CommercialConditionsRequest` | `CommercialConditionsResult` |
-| `CurrencyExchangePort` | `verifyConversion(...)` | `CurrencyConversionRequest` | `CurrencyConversionResult` |
+| Puerto                        | Método orientativo      | Entrada                        | Retorno                       |
+|-------------------------------|-------------------------|--------------------------------|-------------------------------|
+| `AccountAuthorityPort`        | `checkAccount(...)`     | `AccountCheckRequest`          | `AccountCheckResult`          |
+| `DestinationResolutionPort`   | `resolveDestination`    | `DestinationResolutionRequest` | `DestinationResolutionResult` |
+| `RepresentationAuthorityPort` | `checkRepresentation`   | `RepresentationCheckRequest`   | `RepresentationCheckResult`   |
+| `BusinessControlsPort`        | `checkControls(...)`    | `BusinessControlsRequest`      | `BusinessControlsResult`      |
+| `CommercialConditionsPort`    | `determineConditions`   | `CommercialConditionsRequest`  | `CommercialConditionsResult`  |
+| `CurrencyExchangePort`        | `verifyConversion(...)` | `CurrencyConversionRequest`    | `CurrencyConversionResult`    |
 
 Son nombres Java propuestos para capacidades documentadas. No implican que el proveedor tenga esos endpoints.
 
@@ -1693,43 +1697,43 @@ Son nombres Java propuestos para capacidades documentadas. No implican que el pr
 
 Los DTO de `dto/funds/` representan solicitudes a la autoridad monetaria, no operaciones ejecutadas localmente.
 
-| Método del puerto | Entrada | Retorno |
-| --- | --- | --- |
-| `executeInternalMovements(...)` | `FundsExecutionRequest` | `FundsExecutionResult` |
-| `createReservation(...)` | `FundsReservationRequest` | `FundsReservationResult` |
-| `protectReservation(...)` | `FundsReservationProtectionRequest` | `FundsReservationResult` |
-| `consumeReservation(...)` | `FundsReservationConsumptionRequest` | `FundsMonetaryEffectResult` |
-| `releaseReservation(...)` | `FundsReservationReleaseRequest` | `FundsReservationResult` |
-| `creditIncoming(...)` | `FundsIncomingCreditRequest` | `FundsMonetaryEffectResult` |
-| `executeReturnEffect(...)` | `FundsReturnEffectRequest` | `FundsMonetaryEffectResult` |
-| `recoverMonetaryAction(...)` | `FundsRecoveryRequest` | `FundsRecoveryResult` |
-| `getReservation(...)` | `FundsReservationQuery` | `FundsReservationResult` |
+| Método del puerto               | Entrada                              | Retorno                     |
+|---------------------------------|--------------------------------------|-----------------------------|
+| `executeInternalMovements(...)` | `FundsExecutionRequest`              | `FundsExecutionResult`      |
+| `createReservation(...)`        | `FundsReservationRequest`            | `FundsReservationResult`    |
+| `protectReservation(...)`       | `FundsReservationProtectionRequest`  | `FundsReservationResult`    |
+| `consumeReservation(...)`       | `FundsReservationConsumptionRequest` | `FundsMonetaryEffectResult` |
+| `releaseReservation(...)`       | `FundsReservationReleaseRequest`     | `FundsReservationResult`    |
+| `creditIncoming(...)`           | `FundsIncomingCreditRequest`         | `FundsMonetaryEffectResult` |
+| `executeReturnEffect(...)`      | `FundsReturnEffectRequest`           | `FundsMonetaryEffectResult` |
+| `recoverMonetaryAction(...)`    | `FundsRecoveryRequest`               | `FundsRecoveryResult`       |
+| `getReservation(...)`           | `FundsReservationQuery`              | `FundsReservationResult`    |
 
 **`FundsExecutionRequest` — Solicitud de movimientos internos relacionados.**
 
-| Dato | Significado |
-| --- | --- |
-| `remoteActionId` | Identidad estable de la actuación solicitada a Fondos. |
-| `effectId` | Identidad estable del conjunto económico. |
-| `sourceAccountId` | Cuenta de origen del débito. |
-| `destinationAccountId` | Cuenta interna de destino del crédito. |
-| `principalAmount` | Importe exacto y positivo del principal. |
-| `currency` | Moneda del movimiento, sin conversión implícita. |
-| `concepts` | Conceptos monetarios separados cuando correspondan. |
-| `authorizationReference` | Fundamento verificable de la actuación. |
-| `reservationReference` | Reserva previa, cuando corresponda. |
+| Dato                     | Significado                                            |
+|--------------------------|--------------------------------------------------------|
+| `remoteActionId`         | Identidad estable de la actuación solicitada a Fondos. |
+| `effectId`               | Identidad estable del conjunto económico.              |
+| `sourceAccountId`        | Cuenta de origen del débito.                           |
+| `destinationAccountId`   | Cuenta interna de destino del crédito.                 |
+| `principalAmount`        | Importe exacto y positivo del principal.               |
+| `currency`               | Moneda del movimiento, sin conversión implícita.       |
+| `concepts`               | Conceptos monetarios separados cuando correspondan.    |
+| `authorizationReference` | Fundamento verificable de la actuación.                |
+| `reservationReference`   | Reserva previa, cuando corresponda.                    |
 
 **`FundsExecutionResult` — Resultado del conjunto solicitado.**
 
-| Dato | Significado |
-| --- | --- |
-| `remoteActionId` y `effectId` | Vinculan el resultado con la solicitud original. |
-| `outcome` | Confirmación, rechazo definitivo o resultado no comprobado. |
-| `debitReference` | Efecto de débito confirmado, si existe. |
-| `creditReference` | Efecto de crédito confirmado, si existe. |
-| `chargeEffectReferences` | Cargos ejecutados, cuando corresponda. |
-| `evidenceReferences` | Evidencias y procedencia de las confirmaciones. |
-| `confirmedAt` | Momento del hecho confirmado, si corresponde. |
+| Dato                          | Significado                                                 |
+|-------------------------------|-------------------------------------------------------------|
+| `remoteActionId` y `effectId` | Vinculan el resultado con la solicitud original.            |
+| `outcome`                     | Confirmación, rechazo definitivo o resultado no comprobado. |
+| `debitReference`              | Efecto de débito confirmado, si existe.                     |
+| `creditReference`             | Efecto de crédito confirmado, si existe.                    |
+| `chargeEffectReferences`      | Cargos ejecutados, cuando corresponda.                      |
+| `evidenceReferences`          | Evidencias y procedencia de las confirmaciones.             |
+| `confirmedAt`                 | Momento del hecho confirmado, si corresponde.               |
 
 No basta con que el método retorne normalmente: el servicio debe interpretar los hechos informados.
 Un acuse o un timeout no justifican declarar acreditación ni repetir un conjunto monetario.
@@ -1750,14 +1754,14 @@ Una consulta `getReservation(...)` sin datos concluyentes no demuestra que un ef
 
 Los DTO de `dto/exchange/` conservan participante, mecanismo, versión, operación y evidencias relevantes.
 
-| Método del puerto | Entrada | Retorno |
-| --- | --- | --- |
-| `validateMechanism(...)` | `ExchangeMechanismRequest` | `ExchangeMechanismResult` |
-| `prepareExchange(...)` | `ExchangePreparationRequest` | `ExchangePreparationResult` |
-| `dispatchExchange(...)` | `ExchangeDispatchRequest` | `ExchangeDispatchResult` |
+| Método del puerto          | Entrada                       | Retorno                      |
+|----------------------------|-------------------------------|------------------------------|
+| `validateMechanism(...)`   | `ExchangeMechanismRequest`    | `ExchangeMechanismResult`    |
+| `prepareExchange(...)`     | `ExchangePreparationRequest`  | `ExchangePreparationResult`  |
+| `dispatchExchange(...)`    | `ExchangeDispatchRequest`     | `ExchangeDispatchResult`     |
 | `requestCancellation(...)` | `ExchangeCancellationRequest` | `ExchangeCancellationResult` |
-| `requestReturn(...)` | `ExchangeReturnRequest` | `ExchangeReturnResult` |
-| `recoverExchange(...)` | `ExchangeRecoveryRequest` | `ExchangeRecoveryResult` |
+| `requestReturn(...)`       | `ExchangeReturnRequest`       | `ExchangeReturnResult`       |
+| `recoverExchange(...)`     | `ExchangeRecoveryRequest`     | `ExchangeRecoveryResult`     |
 
 **Comprobación de mecanismo:** consulta participante, mecanismo, versión y operación permitida.
 Su resultado identifica habilitación, condiciones verificadas y autoridad responsable.
@@ -1779,14 +1783,14 @@ La ausencia de respuesta no autoriza a liberar cobertura ni a declarar rechazo.
 
 ### 20.8. Otras autoridades y contenido mínimo de los DTO
 
-| Familia | Entrada necesaria | Resultado necesario |
-| --- | --- | --- |
-| `account/` | Cuenta, operación, moneda y contexto. | Capacidades, restricciones y evidencia. |
-| `destination/` | Identificador bancario, tipo y contexto. | Destino resuelto, referencia y momento. |
-| `representation/` | Actor, representado, cuenta y facultad. | Decisión, alcance y evidencia. |
-| `controls/` | Contenido, actores, importe y finalidad. | Admisión, impedimentos y evidencias. |
-| `commercial/` | Operación y condiciones comerciales. | Conceptos, determinación y referencias. |
-| `currency/` | Conversión identificada y condiciones. | Montos, monedas y referencia autorizada. |
+| Familia           | Entrada necesaria                        | Resultado necesario                      |
+|-------------------|------------------------------------------|------------------------------------------|
+| `account/`        | Cuenta, operación, moneda y contexto.    | Capacidades, restricciones y evidencia.  |
+| `destination/`    | Identificador bancario, tipo y contexto. | Destino resuelto, referencia y momento.  |
+| `representation/` | Actor, representado, cuenta y facultad.  | Decisión, alcance y evidencia.           |
+| `controls/`       | Contenido, actores, importe y finalidad. | Admisión, impedimentos y evidencias.     |
+| `commercial/`     | Operación y condiciones comerciales.     | Conceptos, determinación y referencias.  |
+| `currency/`       | Conversión identificada y condiciones.   | Montos, monedas y referencia autorizada. |
 
 `DestinationResolutionResult` es una resolución verificable que se presenta para aceptación.
 Una vez aceptado el destino, una nueva resolución de alias no modifica la instrucción original.

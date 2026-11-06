@@ -6,7 +6,6 @@ Este documento explica qué operaciones empresariales debe resolver `transfer-se
 qué información necesitan, qué decisiones deben tomar y qué garantías debe cumplir el software.
 
 Está organizado para estudiar cada caso de uso por separado y después comprender su implementación en código.
-Los nombres técnicos permanecen en inglés; la traducción breve al español ayuda a reconocer su significado.
 
 El objetivo no es implementar una transferencia como un simple cambio de estado. Una instrucción bancaria puede
 involucrar autorización, reservas, movimientos, intercambio externo, compromisos firmes, cancelaciones,
