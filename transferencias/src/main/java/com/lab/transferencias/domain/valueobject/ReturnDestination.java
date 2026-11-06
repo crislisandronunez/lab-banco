@@ -33,9 +33,13 @@ public record ReturnDestination(
     if (bankIdentifierType != null && bankIdentifierType.isBlank()) {
       throw new DomainInvariantException("bankIdentifierType no puede estar vacío.");
     }
+    if (bankIdentifierType != null && bankIdentifierType.length() > 80)
+      throw new DomainInvariantException("bankIdentifierType no puede exceder 80 caracteres.");
     if (bankIdentifierValue != null && bankIdentifierValue.isBlank()) {
       throw new DomainInvariantException("bankIdentifierValue no puede estar vacío.");
     }
+    if (bankIdentifierValue != null && bankIdentifierValue.length() > 120)
+      throw new DomainInvariantException("bankIdentifierValue no puede exceder 120 caracteres.");
     if (destinationType == DestinationType.INTERNAL) {
       if (accountReference == null) {
         throw new DomainInvariantException("accountReference es obligatorio cuando el retorno es interno.");

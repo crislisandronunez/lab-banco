@@ -1,11 +1,11 @@
 package com.lab.transferencias.application.command;
 
-import java.util.Objects;
+import com.lab.transferencias.application.dto.identity.TransferOriginIdentity;
 import java.util.UUID;
 
 /**
  * Contexto verificado de invocación para la operación de transferencia.
- * Conserva la identidad del actor, el servicio llamador y la clave de idempotencia de la solicitud.
+ * Conserva la identidad verificada del actor y el servicio llamador.
  */
 public record RequestContext(
     UUID actorId,
@@ -13,7 +13,8 @@ public record RequestContext(
     String callerService,
     String scope,
     String idempotencyKey,
-    String correlationId
+    String correlationId,
+    TransferOriginIdentity originIdentity
 ) {
 
   public RequestContext {
@@ -29,10 +30,12 @@ public record RequestContext(
     if (scope == null || scope.isBlank()) {
       throw new IllegalArgumentException("scope no puede ser nulo ni vacío.");
     }
-    if (idempotencyKey == null || idempotencyKey.isBlank()) {
-      throw new IllegalArgumentException("idempotencyKey no puede ser nulo ni vacío.");
+    if (idempotencyKey != null && idempotencyKey.isBlank()) {
+      throw new IllegalArgumentException("idempotencyKey no puede estar vacío.");
     }
-    Objects.requireNonNull(correlationId, "correlationId no puede ser nulo.");
+    if (correlationId != null && correlationId.isBlank()) {
+      throw new IllegalArgumentException("correlationId no puede estar vacío.");
+    }
   }
 }
 

@@ -31,6 +31,8 @@ public record ConfirmedFact(
       throw new DomainInvariantException("evidenceReferences no puede ser nulo.");
     }
     evidenceReferences = new ArrayList<>(evidenceReferences);
+    if (evidenceReferences.isEmpty())
+      throw new DomainInvariantException("Un hecho confirmado requiere evidencia.");
     for (ObjectReference evidence : evidenceReferences) {
       if (evidence == null) {
         throw new DomainInvariantException("evidenceReferences no puede contener elementos nulos.");

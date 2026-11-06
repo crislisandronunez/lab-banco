@@ -18,15 +18,14 @@ public record SendOutgoingTransferCommand(
     ObjectReference orderingParty,
     UUID sourceAccountId,
     AcceptedDestination acceptedDestination,
+    ObjectReference mechanismReference,
     BigDecimal principalAmount,
     Currency currency,
     String purposeCode,
     AuthorizationBasis authorizationBasis,
     List<MonetaryConcept> concepts,
     List<ObjectReference> commercialReferences,
-    ObjectReference fxReference,
-    String externalOperationId,
-    String dispatchChannel
+    ObjectReference fxReference
 ) {
 
   public SendOutgoingTransferCommand {
@@ -41,6 +40,9 @@ public record SendOutgoingTransferCommand(
     }
     if (acceptedDestination == null) {
       throw new IllegalArgumentException("acceptedDestination no puede ser nulo.");
+    }
+    if (mechanismReference == null) {
+      throw new IllegalArgumentException("mechanismReference no puede ser nulo.");
     }
     if (principalAmount == null || principalAmount.signum() <= 0) {
       throw new IllegalArgumentException("principalAmount debe ser positivo.");
@@ -57,13 +59,8 @@ public record SendOutgoingTransferCommand(
     if (concepts == null || concepts.isEmpty()) {
       throw new IllegalArgumentException("concepts no puede ser nulo ni vacío.");
     }
+    concepts = List.copyOf(concepts);
     commercialReferences = commercialReferences == null ? List.of() : List.copyOf(commercialReferences);
-    if (externalOperationId == null || externalOperationId.isBlank()) {
-      throw new IllegalArgumentException("externalOperationId no puede ser nulo ni vacío.");
-    }
-    if (dispatchChannel == null || dispatchChannel.isBlank()) {
-      throw new IllegalArgumentException("dispatchChannel no puede ser nulo ni vacío.");
-    }
   }
 }
 

@@ -20,7 +20,7 @@ public class TransferOutgoingExecution {
   private final ObjectReference mechanismReference;
   private final ObjectReference reservationReference;
   private OutgoingCoverageStatus coverageStatus;
-  private final ObjectReference exchangeReference;
+  private ObjectReference exchangeReference;
   private Instant dispatchAuthorizedAt;
   private Instant irrevocablyAcceptedAt;
   private Instant beneficiaryCreditedAt;
@@ -59,6 +59,13 @@ public class TransferOutgoingExecution {
     if (consumptionStepId == null) {
       throw new DomainInvariantException("consumptionStepId es obligatorio.");
     }
+    if ((beneficiaryCreditedAt == null) != (creditEvidenceReference == null))
+      throw new DomainInvariantException("La fecha y evidencia de acreditación deben informarse juntas.");
+    if (beneficiaryCreditedAt != null && irrevocablyAcceptedAt == null)
+      throw new DomainInvariantException("No puede haber acreditación sin aceptación irrevocable.");
+    if (dispatchAuthorizedAt != null && exchangeReference == null)
+      throw new DomainInvariantException("El despacho autorizado requiere intercambio identificado.");
+    if (lockVersion < 0) throw new DomainInvariantException("lockVersion no puede ser negativa.");
     this.transferId = transferId;
     this.mechanismReference = mechanismReference;
     this.reservationReference = reservationReference;
@@ -71,7 +78,7 @@ public class TransferOutgoingExecution {
     this.consumptionStepId = consumptionStepId;
     this.pendingComponents = immutableComponents(pendingComponents);
     this.updatedAt = updatedAt == null ? Instant.now() : updatedAt;
-    this.lockVersion = lockVersion >= 0 ? lockVersion : 0L;
+    this.lockVersion = lockVersion;
   }
 
   public static TransferOutgoingExecution create(
@@ -116,28 +123,48 @@ public class TransferOutgoingExecution {
     if (status == null) {
       throw new DomainInvariantException("status es obligatorio.");
     }
+    if (beneficiaryCreditedAt != null && status != OutgoingCoverageStatus.RESOLVED)
+      throw new DomainInvariantException("La cobertura acreditada solo puede quedar resuelta.");
+    if (coverageStatus == OutgoingCoverageStatus.RESOLVED && status != OutgoingCoverageStatus.RESOLVED)
+      throw new DomainInvariantException("La cobertura resuelta no puede reabrirse.");
+    if (dispatchAuthorizedAt != null && status == OutgoingCoverageStatus.PREPARING)
+      throw new DomainInvariantException("No se puede liberar cobertura después de autorizar el despacho.");
     this.coverageStatus = status;
     this.updatedAt = Instant.now();
   }
 
   public void protectCoverage() {
-    if (this.coverageStatus == OutgoingCoverageStatus.RESOLUTION_PENDING) {
-      throw new DomainInvariantException("La cobertura requiere resolución antes de continuar.");
-    }
+    if (this.coverageStatus != OutgoingCoverageStatus.PROTECTED)
+      throw new DomainInvariantException("La cobertura debe estar protegida y sin resolución pendiente antes del despacho.");
   }
 
   public void authorizeDispatch(Instant dispatchedAt) {
     if (dispatchedAt == null) {
       throw new DomainInvariantException("dispatchAuthorizedAt es obligatorio.");
     }
+    protectCoverage();
+    if (this.dispatchAuthorizedAt != null)
+      throw new DomainInvariantException("La intención de despacho ya está registrada.");
     this.dispatchAuthorizedAt = dispatchedAt;
     this.updatedAt = Instant.now();
+  }
+
+  public void authorizeDispatch(Instant dispatchedAt, ObjectReference exchangeReference) {
+    if (exchangeReference == null) throw new DomainInvariantException("El intercambio debe quedar identificado antes del despacho.");
+    if (this.exchangeReference != null && !this.exchangeReference.equals(exchangeReference))
+      throw new DomainInvariantException("La identidad del intercambio no puede cambiar.");
+    this.exchangeReference = exchangeReference;
+    authorizeDispatch(dispatchedAt);
   }
 
   public void recordIrrevocableAcceptance(Instant acceptedAt) {
     if (acceptedAt == null) {
       throw new DomainInvariantException("irrevocablyAcceptedAt es obligatorio.");
     }
+    if (dispatchAuthorizedAt == null)
+      throw new DomainInvariantException("No puede aceptarse irrevocablemente sin despacho autorizado.");
+    if (irrevocablyAcceptedAt != null)
+      throw new DomainInvariantException("La aceptación irrevocable ya fue registrada.");
     this.irrevocablyAcceptedAt = acceptedAt;
     this.updatedAt = Instant.now();
   }
@@ -149,16 +176,49 @@ public class TransferOutgoingExecution {
     if (evidenceReference == null) {
       throw new DomainInvariantException("creditEvidenceReference es obligatorio.");
     }
+    if (irrevocablyAcceptedAt == null)
+      throw new DomainInvariantException("No puede acreditarse antes de la aceptación irrevocable.");
+    if (beneficiaryCreditedAt != null
+        && (!beneficiaryCreditedAt.equals(creditedAt) || !creditEvidenceReference.equals(evidenceReference)))
+      throw new DomainInvariantException("La acreditación confirmada no puede alterarse.");
     this.beneficiaryCreditedAt = creditedAt;
     this.creditEvidenceReference = evidenceReference;
     this.updatedAt = Instant.now();
+  }
+
+  public void recordDefinitiveRejection(ObjectReference evidence, boolean futureExecutionPending) {
+    if (evidence == null) throw new DomainInvariantException("El rechazo definitivo requiere evidencia.");
+    if (futureExecutionPending) throw new DomainInvariantException("No se puede rechazar mientras exista ejecución futura posible.");
+    if (irrevocablyAcceptedAt != null || beneficiaryCreditedAt != null)
+      throw new DomainInvariantException("Una aceptación irrevocable no puede convertirse en rechazo definitivo.");
+    if (coverageStatus == OutgoingCoverageStatus.RESOLVED)
+      throw new DomainInvariantException("La cobertura ya fue resuelta.");
+    coverageStatus = OutgoingCoverageStatus.RESOLVED;
+    pendingComponents = Collections.emptyList();
+    updatedAt = Instant.now();
+    lockVersion++;
   }
 
   public void linkReservationConsumption(UUID consumptionStepId) {
     if (consumptionStepId == null) {
       throw new DomainInvariantException("consumptionStepId es obligatorio.");
     }
-    // este valor se conserva como identidad estable del paso de consumo.
+    if (beneficiaryCreditedAt == null)
+      throw new DomainInvariantException("La reserva solo se consume tras acreditar al beneficiario.");
+    if (!this.consumptionStepId.equals(consumptionStepId))
+      throw new DomainInvariantException("La identidad del consumo de reserva no puede cambiar.");
+  }
+
+  public void resolveCoverage(OutgoingCoverageStatus status, List<PendingComponent> remaining) {
+    if (status != OutgoingCoverageStatus.RESOLVED && status != OutgoingCoverageStatus.RESOLUTION_PENDING
+        && status != OutgoingCoverageStatus.PROTECTED && status != OutgoingCoverageStatus.PREPARING)
+      throw new DomainInvariantException("Estado de cobertura inválido.");
+    if (this.beneficiaryCreditedAt != null && status == OutgoingCoverageStatus.PREPARING)
+      throw new DomainInvariantException("No se puede reiniciar cobertura tras acreditar al beneficiario.");
+    this.coverageStatus = status;
+    this.pendingComponents = immutableComponents(remaining);
+    this.updatedAt = Instant.now();
+    this.lockVersion++;
   }
 
   private static List<PendingComponent> immutableComponents(List<PendingComponent> source) {

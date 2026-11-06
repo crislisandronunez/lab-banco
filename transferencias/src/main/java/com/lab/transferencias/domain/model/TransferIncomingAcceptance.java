@@ -14,13 +14,13 @@ import java.util.UUID;
 public class TransferIncomingAcceptance {
 
   private final UUID transferId;
-  private final CheckEvidence destinationCheck;
-  private final CheckEvidence currencyCheck;
-  private final CheckEvidence controlEvidence;
+  private CheckEvidence destinationCheck;
+  private CheckEvidence currencyCheck;
+  private CheckEvidence controlEvidence;
   private final ObjectReference messageReference;
   private IncomingAcceptanceStatus acceptanceStatus;
   private Instant irrevocablyAcceptedAt;
-  private final UUID creditEffectId;
+  private UUID creditEffectId;
 
   private TransferIncomingAcceptance(
       UUID transferId,
@@ -49,6 +49,12 @@ public class TransferIncomingAcceptance {
     if (acceptanceStatus == null) {
       throw new DomainInvariantException("acceptanceStatus es obligatorio.");
     }
+    if (acceptanceStatus == IncomingAcceptanceStatus.ACCEPTED && irrevocablyAcceptedAt == null)
+      throw new DomainInvariantException("ACCEPTED requiere irrevocablyAcceptedAt.");
+    if (acceptanceStatus != IncomingAcceptanceStatus.ACCEPTED && irrevocablyAcceptedAt != null)
+      throw new DomainInvariantException("Solo ACCEPTED puede tener irrevocablyAcceptedAt.");
+    if (acceptanceStatus == IncomingAcceptanceStatus.ACCEPTED && creditEffectId == null)
+      throw new DomainInvariantException("ACCEPTED requiere creditEffectId estable.");
     this.transferId = transferId;
     this.destinationCheck = destinationCheck;
     this.currencyCheck = currencyCheck;
@@ -89,18 +95,33 @@ public class TransferIncomingAcceptance {
     if (destinationCheck == null || currencyCheck == null || controlEvidence == null) {
       throw new DomainInvariantException("Las comprobaciones no pueden ser nulas.");
     }
-    // Se conservan como datos de la aceptación; la entidad es inmutable en sus referencias esenciales.
+    if (acceptanceStatus == IncomingAcceptanceStatus.ACCEPTED)
+      throw new DomainInvariantException("No se pueden cambiar comprobaciones tras la aceptación firme.");
+    this.destinationCheck = destinationCheck;
+    this.currencyCheck = currencyCheck;
+    this.controlEvidence = controlEvidence;
   }
 
   public void acceptIrrevocably(Instant acceptedAt) {
+    if (acceptanceStatus == IncomingAcceptanceStatus.REJECTED)
+      throw new DomainInvariantException("Una aceptación rechazada no puede hacerse irrevocable.");
+    if (destinationCheck == null || currencyCheck == null || controlEvidence == null || creditEffectId == null)
+      throw new DomainInvariantException("La aceptación firme requiere comprobaciones y efecto de crédito identificado.");
     if (acceptedAt == null) {
       throw new DomainInvariantException("acceptedAt es obligatorio.");
+    }
+    if (acceptanceStatus == IncomingAcceptanceStatus.ACCEPTED) {
+      if (!acceptedAt.equals(irrevocablyAcceptedAt))
+        throw new DomainInvariantException("La fecha de aceptación irrevocable no puede cambiar.");
+      return;
     }
     this.acceptanceStatus = IncomingAcceptanceStatus.ACCEPTED;
     this.irrevocablyAcceptedAt = acceptedAt;
   }
 
   public void rejectBeforeAcceptance() {
+    if (acceptanceStatus == IncomingAcceptanceStatus.ACCEPTED)
+      throw new DomainInvariantException("Una aceptación irrevocable no puede convertirse en rechazo.");
     this.acceptanceStatus = IncomingAcceptanceStatus.REJECTED;
     this.irrevocablyAcceptedAt = null;
   }
@@ -112,6 +133,16 @@ public class TransferIncomingAcceptance {
     if (this.creditEffectId != null && !this.creditEffectId.equals(creditEffectId)) {
       throw new DomainInvariantException("creditEffectId ya está asociado y no puede cambiarse.");
     }
+    this.creditEffectId = creditEffectId;
+  }
+
+  public boolean sameRequestContent(TransferIncomingAcceptance other) {
+    return other != null && transferId.equals(other.transferId)
+        && destinationCheck.equals(other.destinationCheck) && currencyCheck.equals(other.currencyCheck)
+        && controlEvidence.equals(other.controlEvidence) && messageReference.equals(other.messageReference)
+        && acceptanceStatus == other.acceptanceStatus
+        && Objects.equals(irrevocablyAcceptedAt, other.irrevocablyAcceptedAt)
+        && Objects.equals(creditEffectId, other.creditEffectId);
   }
 
   public UUID getTransferId() { return transferId; }

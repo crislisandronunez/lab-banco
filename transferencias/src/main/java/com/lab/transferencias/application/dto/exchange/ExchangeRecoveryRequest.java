@@ -9,7 +9,7 @@ public record ExchangeRecoveryRequest(
     UUID exchangeId,
     UUID remoteActionId,
     UUID effectId,
-    String participantCode,
+    UUID participantId,
     String mechanismCode,
     String recoveryReason
 ) {

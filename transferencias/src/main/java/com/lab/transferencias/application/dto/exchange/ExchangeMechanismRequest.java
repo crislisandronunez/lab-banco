@@ -8,10 +8,15 @@ import java.util.UUID;
 public record ExchangeMechanismRequest(
     UUID transferId,
     UUID actionId,
-    String participantCode,
+    UUID participantId,
     String mechanismCode,
     String operationType,
-    String version
+    long mechanismVersion
 ) {
+
+  public ExchangeMechanismRequest {
+    if (mechanismVersion <= 0)
+      throw new IllegalArgumentException("mechanismVersion debe ser positiva.");
+  }
 }
 

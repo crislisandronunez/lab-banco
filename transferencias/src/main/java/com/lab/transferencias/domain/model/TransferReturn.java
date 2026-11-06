@@ -10,9 +10,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.List;
 
 /**
  * Representa una devolución vinculada a una transferencia y conserva su identidad económica.
@@ -22,7 +22,7 @@ public class TransferReturn {
   private final UUID returnId;
   private final UUID transferId;
   private final UUID returnEffectId;
-  private BigDecimal amount;
+  private final BigDecimal amount;
   private final Currency currency;
   private final String reasonCode;
   private final ReturnDestination returnDestination;
@@ -33,6 +33,7 @@ public class TransferReturn {
   private final Instant createdAt;
   private long version;
   private long lockVersion;
+  private List<TransferReturnStep> steps = List.of();
 
   private TransferReturn(
       UUID returnId,
@@ -61,6 +62,7 @@ public class TransferReturn {
     if (amount == null || amount.signum() <= 0) {
       throw new DomainInvariantException("amount debe ser mayor que cero.");
     }
+    if (amount.scale() > 2) throw new DomainInvariantException("amount no puede tener más de dos decimales.");
     if (currency == null) {
       throw new DomainInvariantException("currency es obligatorio.");
     }
@@ -76,6 +78,9 @@ public class TransferReturn {
     if (status == null) {
       throw new DomainInvariantException("status es obligatorio.");
     }
+    if ((status == ReturnStatus.CONFIRMED || status == ReturnStatus.REJECTED)
+        && (resultReferences == null || resultReferences.isEmpty()))
+      throw new DomainInvariantException("Un resultado definitivo requiere evidencia.");
     if (createdActionId == null) {
       throw new DomainInvariantException("createdActionId es obligatorio.");
     }
@@ -144,30 +149,85 @@ public class TransferReturn {
   }
 
   public void registerReturn() {
-    if (status == ReturnStatus.CONFIRMED || status == ReturnStatus.REJECTED) {
-      throw new DomainInvariantException("La devolución ya tiene un resultado definido.");
-    }
+    if (status != ReturnStatus.PENDING)
+      throw new DomainInvariantException("Solo se puede registrar una devolución pendiente.");
     this.status = ReturnStatus.PENDING;
   }
 
+  public void validateDestinationCurrency() {
+    if (returnDestination.currency() != currency)
+      throw new DomainInvariantException("El destino y la devolución deben tener la misma moneda.");
+  }
+
   public void confirmWithEvidence(List<ObjectReference> resultReferences) {
+    if (status == ReturnStatus.REJECTED) throw new DomainInvariantException("Una devolución rechazada no puede confirmarse.");
     if (resultReferences == null || resultReferences.isEmpty()) {
       throw new DomainInvariantException("resultReferences debe contener evidencia suficiente.");
     }
-    this.resultReferences = immutableReferences(resultReferences);
+    List<ObjectReference> evidence = immutableReferences(resultReferences);
+    if (status == ReturnStatus.CONFIRMED) {
+      if (this.resultReferences.equals(evidence)) return;
+      throw new DomainInvariantException("La evidencia de una devolución confirmada no puede alterarse.");
+    }
+    this.resultReferences = evidence;
     this.status = ReturnStatus.CONFIRMED;
   }
 
   public void rejectWithEvidence(List<ObjectReference> resultReferences) {
+    if (status == ReturnStatus.CONFIRMED) throw new DomainInvariantException("Una devolución confirmada no puede rechazarse sin revertir antes el control.");
     if (resultReferences == null || resultReferences.isEmpty()) {
       throw new DomainInvariantException("resultReferences debe contener evidencia suficiente.");
     }
-    this.resultReferences = immutableReferences(resultReferences);
+    List<ObjectReference> evidence = immutableReferences(resultReferences);
+    if (status == ReturnStatus.REJECTED) {
+      if (this.resultReferences.equals(evidence)) return;
+      throw new DomainInvariantException("La evidencia de un rechazo confirmado no puede alterarse.");
+    }
+    this.resultReferences = evidence;
     this.status = ReturnStatus.REJECTED;
   }
 
   public void recordUncertainty() {
-    this.status = ReturnStatus.UNCERTAIN;
+    throw new DomainInvariantException("La incertidumbre debe conservar evidencia del intento.");
+  }
+
+  public void requireReview(List<ObjectReference> evidence) {
+    if (status == ReturnStatus.CONFIRMED || status == ReturnStatus.REJECTED)
+      throw new DomainInvariantException("Un resultado definitivo no puede pasar a revisión.");
+    if (evidence == null || evidence.isEmpty())
+      throw new DomainInvariantException("La revisión requiere evidencia contradictoria o insuficiente.");
+    this.resultReferences = immutableReferences(evidence);
+    this.status = ReturnStatus.REQUIRES_REVIEW;
+  }
+
+  public void recordUncertainty(List<ObjectReference> evidence) {
+    if (evidence == null || evidence.isEmpty())
+      throw new DomainInvariantException("La incertidumbre debe conservar evidencia del intento.");
+    if (status == ReturnStatus.CONFIRMED || status == ReturnStatus.REJECTED)
+      throw new DomainInvariantException("Un resultado definitivo no puede volver a incierto.");
+    resultReferences = immutableReferences(evidence);
+    status = ReturnStatus.UNCERTAIN;
+  }
+
+  public void attachStep(TransferReturnStep step) {
+    Objects.requireNonNull(step, "step");
+    if (!returnId.equals(step.getReturnId())) throw new DomainInvariantException("El paso remoto pertenece a otra devolución.");
+    if (steps.stream().anyMatch(s -> s.getComponentCode().equals(step.getComponentCode())))
+      throw new DomainInvariantException("Ya existe un paso para ese componente de devolución.");
+    if (steps.stream().anyMatch(s -> s.hasSameRemoteIdentity(step.getRemoteActionId(), step.getResponsibleService())))
+      throw new DomainInvariantException("La identidad remota ya está asociada a esta devolución.");
+    ArrayList<TransferReturnStep> copy = new ArrayList<>(steps); copy.add(step);
+    steps = Collections.unmodifiableList(copy);
+  }
+
+  public List<TransferReturnStep> getSteps() { return steps; }
+
+  public boolean sameRequestContent(TransferReturn other) {
+    return other != null && returnId.equals(other.returnId) && transferId.equals(other.transferId)
+        && returnEffectId.equals(other.returnEffectId) && amount.compareTo(other.amount) == 0
+        && currency == other.currency && reasonCode.equals(other.reasonCode)
+        && returnDestination.equals(other.returnDestination)
+        && authorizationBasis.equals(other.authorizationBasis);
   }
 
   private static List<ObjectReference> immutableReferences(List<ObjectReference> source) {

@@ -58,8 +58,11 @@ public class TransferCancellation {
     if (outcome == null) {
       throw new DomainInvariantException("outcome es obligatorio.");
     }
-    if (version < 0) {
-      throw new DomainInvariantException("version no puede ser negativa.");
+    if ((outcome == CancellationOutcome.CANCELLED || outcome == CancellationOutcome.ALREADY_CREDITED)
+        && (finalEvidence == null || finalEvidence.isEmpty()))
+      throw new DomainInvariantException("Un resultado definitivo de cancelación requiere evidencia.");
+    if (version <= 0) {
+      throw new DomainInvariantException("version debe ser positiva.");
     }
     if (lockVersion < 0) {
       throw new DomainInvariantException("lockVersion no puede ser negativa.");
@@ -113,15 +116,36 @@ public class TransferCancellation {
     if (outcome == null) {
       throw new DomainInvariantException("outcome es obligatorio.");
     }
+    if (this.outcome == CancellationOutcome.CANCELLED || this.outcome == CancellationOutcome.ALREADY_CREDITED) {
+      if (this.outcome != outcome || !this.finalEvidence.equals(immutableEvidence(evidence)))
+        throw new DomainInvariantException("El resultado definitivo de cancelación no puede alterarse.");
+      return;
+    }
+    if ((outcome == CancellationOutcome.CANCELLED || outcome == CancellationOutcome.ALREADY_CREDITED)
+        && (evidence == null || evidence.isEmpty()))
+      throw new DomainInvariantException("Un resultado de cancelación requiere evidencia.");
     this.outcome = outcome;
     this.finalEvidence = immutableEvidence(evidence);
   }
 
   public void confirmCancellation() {
+    if (outcome == CancellationOutcome.ALREADY_CREDITED)
+      throw new DomainInvariantException("Una transferencia acreditada no puede confirmarse como cancelada.");
+    if (finalEvidence.isEmpty()) throw new DomainInvariantException("La cancelación requiere evidencia definitiva.");
+    if (outcome == CancellationOutcome.CANCELLED) return;
     this.outcome = CancellationOutcome.CANCELLED;
   }
 
+  public boolean sameRequestContent(TransferCancellation other) {
+    return other != null && cancellationId.equals(other.cancellationId) && transferId.equals(other.transferId)
+        && reason.equals(other.reason) && authorizationBasis.equals(other.authorizationBasis)
+        && Objects.equals(exchangeReference, other.exchangeReference)
+        && Objects.equals(cancellationStepId, other.cancellationStepId);
+  }
+
   public void recordUncertainOutcome() {
+    if (outcome == CancellationOutcome.CANCELLED || outcome == CancellationOutcome.ALREADY_CREDITED)
+      throw new DomainInvariantException("Un resultado definitivo no puede volver a incierto.");
     this.outcome = CancellationOutcome.REQUIRES_RESOLUTION;
   }
 

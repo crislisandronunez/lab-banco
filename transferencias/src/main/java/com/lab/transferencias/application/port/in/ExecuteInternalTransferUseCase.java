@@ -1,6 +1,7 @@
 package com.lab.transferencias.application.port.in;
 
 import com.lab.transferencias.application.command.ExecuteInternalTransferCommand;
+import com.lab.transferencias.application.command.RequestContext;
 import com.lab.transferencias.application.result.TransferActionResult;
 
 /**
@@ -9,7 +10,7 @@ import com.lab.transferencias.application.result.TransferActionResult;
  */
 public interface ExecuteInternalTransferUseCase {
 
-  TransferActionResult execute(ExecuteInternalTransferCommand command);
+  TransferActionResult execute(ExecuteInternalTransferCommand command, RequestContext requestContext);
 
 }
 

@@ -15,5 +15,11 @@ public interface TransferInboxRepository {
 
   Optional<InboxEventRecord> findByMessageId(UUID messageId);
 
+  Optional<InboxEventRecord> findBySourceFact(
+      UUID transferId,
+      String sourceService,
+      UUID sourceFactId,
+      long sourceFactVersion);
+
   List<InboxEventRecord> findByTransferId(UUID transferId);
 }

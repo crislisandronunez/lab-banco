@@ -1,7 +1,9 @@
 package com.lab.transferencias.application.port.in;
 
-import com.lab.transferencias.application.querys.SearchTransfersQuery;
-import com.lab.transferencias.application.result.TransferSearchResult;
+import com.lab.transferencias.application.query.SearchTransfersQuery;
+import com.lab.transferencias.application.result.TransferView;
+import com.lab.transferencias.application.command.RequestContext;
+import java.util.Optional;
 
 /**
  * Puerto de entrada para buscar transferencias por identidad externa o referencia de negocio.
@@ -9,6 +11,6 @@ import com.lab.transferencias.application.result.TransferSearchResult;
  */
 public interface SearchTransfersUseCase {
 
-  TransferSearchResult search(SearchTransfersQuery query);
+  Optional<TransferView> search(SearchTransfersQuery query, RequestContext requestContext);
 }
 

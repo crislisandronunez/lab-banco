@@ -1,6 +1,7 @@
 package com.lab.transferencias.application.port.in;
 
 import com.lab.transferencias.application.command.ReturnTransferCommand;
+import com.lab.transferencias.application.command.RequestContext;
 import com.lab.transferencias.application.result.TransferActionResult;
 
 /**
@@ -9,6 +10,6 @@ import com.lab.transferencias.application.result.TransferActionResult;
  */
 public interface ReturnTransferUseCase {
 
-  TransferActionResult execute(ReturnTransferCommand command);
+  TransferActionResult execute(ReturnTransferCommand command, RequestContext requestContext);
 }
 

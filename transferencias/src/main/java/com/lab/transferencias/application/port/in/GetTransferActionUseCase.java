@@ -1,7 +1,8 @@
 package com.lab.transferencias.application.port.in;
 
-import com.lab.transferencias.application.querys.GetTransferActionQuery;
+import com.lab.transferencias.application.query.GetTransferActionQuery;
 import com.lab.transferencias.application.result.TransferActionView;
+import com.lab.transferencias.application.command.RequestContext;
 
 /**
  * Puerto de entrada para consultar el detalle de una actuación persistente.
@@ -9,6 +10,6 @@ import com.lab.transferencias.application.result.TransferActionView;
  */
 public interface GetTransferActionUseCase {
 
-  TransferActionView get(GetTransferActionQuery query);
+  TransferActionView get(GetTransferActionQuery query, RequestContext requestContext);
 }
 

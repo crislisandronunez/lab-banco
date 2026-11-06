@@ -4,6 +4,7 @@ import com.lab.transferencias.application.dto.persistence.RecoveryJobRecord;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.Instant;
 
 /**
  * Contrato para programar y recuperar trabajos de reconciliación y reintento de pasos remotos pendientes.
@@ -16,4 +17,6 @@ public interface RecoveryJobRepository {
   Optional<RecoveryJobRecord> findById(UUID jobId);
 
   List<RecoveryJobRecord> findPendingByTransferId(UUID transferId);
+
+  List<RecoveryJobRecord> findDueBefore(Instant instant, int limit);
 }

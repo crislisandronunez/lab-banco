@@ -1,9 +1,6 @@
 package com.lab.transferencias.application.command;
 
 import com.lab.transferencias.domain.enums.Currency;
-import com.lab.transferencias.domain.valueobject.AcceptedDestination;
-import com.lab.transferencias.domain.valueobject.AuthorizationBasis;
-import com.lab.transferencias.domain.valueobject.MonetaryConcept;
 import com.lab.transferencias.domain.valueobject.ObjectReference;
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,35 +12,25 @@ import java.util.UUID;
  */
 public record ReceiveIncomingTransferCommand(
     ActionContext context,
-    ObjectReference sourceParticipant,
-    ObjectReference externalReference,
+    ExternalOperationReference externalOperation,
+    ObjectReference orderingParty,
+    ObjectReference beneficiaryReference,
     UUID destinationAccountId,
-    AcceptedDestination acceptedDestination,
     BigDecimal principalAmount,
     Currency currency,
     String purposeCode,
-    AuthorizationBasis authorizationBasis,
-    List<MonetaryConcept> concepts,
-    String externalOperationId,
-    String messageChannel
+    ObjectReference messageReference,
+    List<ObjectReference> evidenceReferences,
+    String receivedContentHash
 ) {
 
   public ReceiveIncomingTransferCommand {
     if (context == null) {
       throw new IllegalArgumentException("context no puede ser nulo.");
     }
-    if (sourceParticipant == null) {
-      throw new IllegalArgumentException("sourceParticipant no puede ser nulo.");
-    }
-    if (externalReference == null) {
-      throw new IllegalArgumentException("externalReference no puede ser nulo.");
-    }
-    if (destinationAccountId == null) {
-      throw new IllegalArgumentException("destinationAccountId no puede ser nulo.");
-    }
-    if (acceptedDestination == null) {
-      throw new IllegalArgumentException("acceptedDestination no puede ser nulo.");
-    }
+    if (externalOperation == null) throw new IllegalArgumentException("externalOperation no puede ser nulo.");
+    if (orderingParty == null || destinationAccountId == null)
+      throw new IllegalArgumentException("orderingParty y destinationAccountId son obligatorios.");
     if (principalAmount == null || principalAmount.signum() <= 0) {
       throw new IllegalArgumentException("principalAmount debe ser positivo.");
     }
@@ -53,18 +40,11 @@ public record ReceiveIncomingTransferCommand(
     if (purposeCode == null || purposeCode.isBlank()) {
       throw new IllegalArgumentException("purposeCode no puede ser nulo ni vacío.");
     }
-    if (authorizationBasis == null) {
-      throw new IllegalArgumentException("authorizationBasis no puede ser nulo.");
-    }
-    if (concepts == null || concepts.isEmpty()) {
-      throw new IllegalArgumentException("concepts no puede ser nulo ni vacío.");
-    }
-    if (externalOperationId == null || externalOperationId.isBlank()) {
-      throw new IllegalArgumentException("externalOperationId no puede ser nulo ni vacío.");
-    }
-    if (messageChannel == null || messageChannel.isBlank()) {
-      throw new IllegalArgumentException("messageChannel no puede ser nulo ni vacío.");
-    }
+    if (messageReference == null || evidenceReferences == null)
+      throw new IllegalArgumentException("messageReference y evidenceReferences son obligatorios.");
+    evidenceReferences = List.copyOf(evidenceReferences);
+    if (receivedContentHash == null || !receivedContentHash.matches("^[a-fA-F0-9]{64}$"))
+      throw new IllegalArgumentException("receivedContentHash debe ser SHA-256 hexadecimal.");
   }
 }
 

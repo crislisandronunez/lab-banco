@@ -2,6 +2,7 @@ package com.lab.transferencias.application.port.out;
 
 import com.lab.transferencias.application.dto.persistence.TransferActionSnapshot;
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -14,7 +15,7 @@ public interface TransferActionRepository {
 
   Optional<TransferActionSnapshot> findByActionId(UUID actionId);
 
-  Optional<TransferActionSnapshot> findByTransferId(UUID transferId);
+  List<TransferActionSnapshot> findByTransferId(UUID transferId);
 
-  Optional<TransferActionSnapshot> findByOperationId(UUID operationId);
+  List<TransferActionSnapshot> findByOperationId(UUID operationId);
 }

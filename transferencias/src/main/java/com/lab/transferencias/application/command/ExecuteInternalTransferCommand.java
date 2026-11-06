@@ -1,7 +1,6 @@
 package com.lab.transferencias.application.command;
 
 import com.lab.transferencias.application.exception.InvalidActionContextException;
-import com.lab.transferencias.application.exception.IdempotencyConflictException;
 import com.lab.transferencias.domain.enums.Currency;
 import com.lab.transferencias.domain.valueobject.AcceptedDestination;
 import com.lab.transferencias.domain.valueobject.AuthorizationBasis;
@@ -58,9 +57,10 @@ public record ExecuteInternalTransferCommand(
     if (concepts == null || concepts.isEmpty()) {
       throw new InvalidActionContextException("concepts no puede ser nulo ni vacío.");
     }
+    concepts = List.copyOf(concepts);
     commercialReferences = commercialReferences == null ? List.of() : List.copyOf(commercialReferences);
     if (fxReference != null && fxReference.objectType() == null) {
-      throw new IdempotencyConflictException(context.actionId(), "fxReference no es válido para esta operación.");
+      throw new InvalidActionContextException("fxReference no es válido para esta operación.");
     }
   }
 }

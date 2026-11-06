@@ -1,7 +1,8 @@
 package com.lab.transferencias.application.port.in;
 
-import com.lab.transferencias.application.querys.GetTransferQuery;
+import com.lab.transferencias.application.query.GetTransferQuery;
 import com.lab.transferencias.application.result.TransferView;
+import com.lab.transferencias.application.command.RequestContext;
 
 /**
  * Puerto de entrada para consultar una transferencia por su identidad principal.
@@ -9,6 +10,6 @@ import com.lab.transferencias.application.result.TransferView;
  */
 public interface GetTransferUseCase {
 
-  TransferView get(GetTransferQuery query);
+  TransferView get(GetTransferQuery query, RequestContext requestContext);
 }
 

@@ -30,12 +30,16 @@ controlar las decisiones que afectan a su ciclo de vida.
 - Conservar el destino resuelto que fue presentado y aceptado.
 - Conservar las autorizaciones vinculadas al contenido exacto de la instrucción.
 - Diferenciar y registrar controles, actuaciones, hechos comprobados y resultados inciertos.
-- Coordinar la ejecución de transferencias internas y externas.
-- Solicitar reservas, débitos y créditos sin administrar los saldos.
+- Incorporar los resultados de la ejecución de transferencias internas y externas.
+- Conservar las referencias y evidencias de reservas, débitos y créditos, sin administrar saldos.
 - Ordenar cancelaciones frente al despacho y conservar sus resultados.
 - Controlar devoluciones parciales, totales, duplicadas y simultáneas.
 - Mantener identidades estables para idempotencia y recuperación ante fallos.
 - Conservar la historia y los datos necesarios para comunicar hechos del servicio.
+
+La coordinación de los casos de uso y las solicitudes a Fondos y Compensación corresponden a la capa de
+aplicación. El agregado `Transfer` controla sus invariantes e incorpora los resultados comprobados,
+sin invocar directamente a las autoridades externas.
 
 ### 2.2. Responsabilidades que no se incorporan
 
@@ -102,6 +106,9 @@ domain/
 - `model/`: la raíz del agregado, sus entidades subordinadas y componentes con identidad o seguimiento propio.
 - `enums/`: conjuntos cerrados de valores que restringen modalidades y resultados del negocio.
 - `valueobject/`: datos definidos por su contenido, sin identidad empresarial propia y preferentemente inmutables.
+
+El árbol muestra una organización Java de referencia. `ExternalOperationReference.java` es una posible
+representación tipada, no una obligación de duplicar la identidad ya conservada por `TransferExternalOperation`.
 
 `Transfer` y `TransferOrder` son dos nombres para **la misma instrucción**, no dos agregados separados.
 En este modelo se utiliza `Transfer` como nombre de clase.
@@ -859,6 +866,11 @@ que deba volver a resolverse cada vez que se utiliza.
 6. El beneficiario se identifica según las exigencias del mecanismo utilizado.
 7. No se altera el snapshot cuando cambia el alias o la información que lo originó.
 
+El `acceptedContentHash` de `AcceptedDestination` identifica los datos del destino presentados y aceptados.
+El `acceptedContentHash` de `Transfer` identifica el contenido autorizado de toda la instrucción.
+Son huellas con alcances distintos: no se exige que sus valores sean iguales entre sí.
+Cada una debe verificarse contra el contenido canónico que representa, sin permitir cambios materiales.
+
 Ejemplo de invariancia: un alias se resolvió a la cuenta A y se aceptó. Si luego apunta a B,
 la transferencia original continúa dirigida a A.
 
@@ -902,6 +914,11 @@ idénticas emitidas por participantes distintos.
 ```text
 businessKey = participantId + mechanismCode + externalOperationId
 ```
+
+Estos datos y esta clave son requisitos del contrato, independientemente de su representación Java.
+Pueden conservarse en `TransferExternalOperation` sin crear una clase adicional, siempre que se mantengan
+los cuatro datos, la clave empresarial sin versión y la comprobación de contenido ante repeticiones.
+Si se utiliza `ExternalOperationReference` como objeto de valor, debe respetar las mismas reglas.
 
 Si se utiliza `record`, su igualdad estructural incluye `mechanismVersion`. No usar ese `equals()`
 como único criterio para reconocer una operación externa ya procesada.

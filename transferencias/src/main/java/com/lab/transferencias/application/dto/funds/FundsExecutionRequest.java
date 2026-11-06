@@ -5,6 +5,7 @@ import com.lab.transferencias.domain.valueobject.MonetaryConcept;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import com.lab.transferencias.domain.valueobject.ObjectReference;
 
 /**
  * Solicitud de movimientos internos relacionados con una actuación, una reserva y una identidad económica estable.
@@ -18,7 +19,11 @@ public record FundsExecutionRequest(
     BigDecimal principalAmount,
     Currency currency,
     List<MonetaryConcept> concepts,
-    String authorizationReference,
-    String reservationReference
+    ObjectReference authorizationReference,
+    ObjectReference reservationReference
 ) {
+
+  public FundsExecutionRequest {
+    concepts = List.copyOf(concepts);
+  }
 }

@@ -21,9 +21,11 @@ public record CheckEvidence(
     if (checkCode == null || checkCode.isBlank()) {
       throw new DomainInvariantException("checkCode no puede ser nulo ni vacío.");
     }
+    if (checkCode.length() > 80) throw new DomainInvariantException("checkCode no puede exceder 80 caracteres.");
     if (decisionCode == null || decisionCode.isBlank()) {
       throw new DomainInvariantException("decisionCode no puede ser nulo ni vacío.");
     }
+    if (decisionCode.length() > 80) throw new DomainInvariantException("decisionCode no puede exceder 80 caracteres.");
     if (sourceReference == null) {
       throw new DomainInvariantException("sourceReference es obligatorio.");
     }

@@ -1,8 +1,8 @@
 package com.lab.transferencias.application.port.out;
 
-import com.lab.transferencias.application.dto.persistence.TransferOriginIdentity;
+import com.lab.transferencias.application.dto.identity.TransferOriginIdentity;
+import com.lab.transferencias.application.dto.identity.TransferExternalIdentity;
 import com.lab.transferencias.domain.model.Transfer;
-import com.lab.transferencias.domain.valueobject.ObjectReference;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,7 +18,7 @@ public interface TransferRepository {
 
   Optional<Transfer> findByOriginIdentity(TransferOriginIdentity identity);
 
-  Optional<Transfer> findByExternalIdentity(ObjectReference identity);
+  Optional<Transfer> findByExternalIdentity(TransferExternalIdentity identity);
 
   Optional<Transfer> lockForUpdate(UUID transferId);
 }

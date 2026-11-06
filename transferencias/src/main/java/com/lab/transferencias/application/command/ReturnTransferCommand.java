@@ -1,7 +1,11 @@
 package com.lab.transferencias.application.command;
 
 import com.lab.transferencias.domain.valueobject.ObjectReference;
+import com.lab.transferencias.domain.valueobject.ReturnDestination;
+import com.lab.transferencias.domain.valueobject.AuthorizationBasis;
+import com.lab.transferencias.domain.enums.Currency;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -11,11 +15,13 @@ import java.util.UUID;
 public record ReturnTransferCommand(
     ActionContext context,
     UUID transferId,
-    UUID originalTransferId,
-    BigDecimal returnAmount,
-    String reason,
-    ObjectReference returnSource,
-    ObjectReference originalActionReference
+    UUID returnEffectId,
+    BigDecimal amount,
+    Currency currency,
+    String reasonCode,
+    ReturnDestination returnDestination,
+    AuthorizationBasis authorizationBasis,
+    List<ObjectReference> relatedReturns
 ) {
 
   public ReturnTransferCommand {
@@ -25,21 +31,22 @@ public record ReturnTransferCommand(
     if (transferId == null) {
       throw new IllegalArgumentException("transferId no puede ser nulo.");
     }
-    if (originalTransferId == null) {
-      throw new IllegalArgumentException("originalTransferId no puede ser nulo.");
+    if (returnEffectId == null) {
+      throw new IllegalArgumentException("returnEffectId no puede ser nulo.");
     }
-    if (returnAmount == null || returnAmount.signum() <= 0) {
-      throw new IllegalArgumentException("returnAmount debe ser positivo.");
+    if (amount == null || amount.signum() <= 0) {
+      throw new IllegalArgumentException("amount debe ser positivo.");
     }
-    if (reason == null || reason.isBlank()) {
-      throw new IllegalArgumentException("reason no puede ser nulo ni vacío.");
+    if (currency == null) {
+      throw new IllegalArgumentException("currency no puede ser nula.");
     }
-    if (returnSource == null) {
-      throw new IllegalArgumentException("returnSource no puede ser nulo.");
+    if (reasonCode == null || reasonCode.isBlank()) {
+      throw new IllegalArgumentException("reasonCode no puede ser nulo ni vacío.");
     }
-    if (originalActionReference == null) {
-      throw new IllegalArgumentException("originalActionReference no puede ser nulo.");
+    if (returnDestination == null || authorizationBasis == null) {
+      throw new IllegalArgumentException("returnDestination y authorizationBasis son obligatorios.");
     }
+    relatedReturns = relatedReturns == null ? List.of() : List.copyOf(relatedReturns);
   }
 }
 

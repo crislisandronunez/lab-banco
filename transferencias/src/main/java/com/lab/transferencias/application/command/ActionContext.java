@@ -31,8 +31,17 @@ public record ActionContext(
     if (purpose == null || purpose.isBlank()) {
       throw new InvalidActionContextException("purpose no puede ser nulo ni vacío.");
     }
+    if (expectedVersion != null && expectedVersion <= 0) {
+      throw new InvalidActionContextException("expectedVersion debe ser positivo.");
+    }
+    if (reason != null && reason.isBlank()) {
+      throw new InvalidActionContextException("reason no puede estar vacío.");
+    }
     if (evidenceReferences == null) {
       throw new InvalidActionContextException("evidenceReferences no puede ser nulo.");
+    }
+    if (evidenceReferences.stream().anyMatch(java.util.Objects::isNull)) {
+      throw new InvalidActionContextException("evidenceReferences no puede contener valores nulos.");
     }
     evidenceReferences = List.copyOf(evidenceReferences);
   }

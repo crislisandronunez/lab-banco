@@ -18,27 +18,27 @@ No es dueño de los saldos ni ejecuta por sí mismo los movimientos monetarios.
 
 ### 2.1. Las tres modalidades de transferencia
 
-| Modalidad        | Nombre en inglés | Problema empresarial                                                              |
-|------------------|------------------|-----------------------------------------------------------------------------------|
-| Interna          | `INTERNAL`       | Trasladar dinero entre dos cuentas del banco con resultado monetario indivisible. |
-| Externa saliente | `OUTGOING`       | Enviar dinero desde una cuenta del banco hacia otro participante.                 |
-| Externa entrante | `INCOMING`       | Recibir una instrucción externa y acreditar una cuenta del banco una sola vez.    |
+| Modalidad | Nombre | Problema empresarial |
+|---|---|---|
+| Interna | `INTERNAL` | Trasladar dinero entre cuentas con resultado indivisible. |
+| Saliente | `OUTGOING` | Enviar dinero a otro participante. |
+| Entrante | `INCOMING` | Recibir una instrucción externa y acreditar una cuenta una vez. |
 
 Una operación puede estar recibida sin haberse ejecutado. Un mensaje puede haberse enviado sin que el
 beneficiario esté acreditado. Una devolución es una operación nueva y vinculada, no la desaparición de la original.
 
 ### 2.2. Catálogo de casos de uso
 
-| Caso de uso               | Significado en español         | Propósito                                                 | Contrato  |
-|---------------------------|--------------------------------|-----------------------------------------------------------|-----------|
-| `ExecuteInternalTransfer` | Ejecutar transferencia interna | Coordinar débito y crédito conjuntos.                     | CI-05-001 |
-| `SendOutgoingTransfer`    | Enviar transferencia saliente  | Proteger cobertura y coordinar envío externo.             | CI-05-002 |
-| `ReceiveIncomingTransfer` | Recibir transferencia entrante | Aceptar y coordinar crédito único.                        | CI-05-003 |
-| `CancelTransfer`          | Cancelar transferencia         | Impedir ejecución cuando pueda demostrarse.               | CI-05-004 |
-| `ReturnTransfer`          | Devolver transferencia         | Restituir principal mediante una operación vinculada.     | CI-05-005 |
-| `GetTransfer`             | Consultar transferencia        | Mostrar hechos, importes, referencias y pendientes.       | CI-05-006 |
-| `GetTransferAction`       | Consultar actuación            | Recuperar el resultado de una petición identificada.      | CI-05-006 |
-| `SearchTransfers`         | Buscar transferencias          | Localizar una instrucción por identidad externa completa. | CI-05-006 |
+| Caso de uso | Propósito | Contrato |
+|---|---|---|
+| `ExecuteInternalTransfer` | Coordinar débito y crédito conjuntos. | CI-05-001 |
+| `SendOutgoingTransfer` | Proteger cobertura y coordinar envío. | CI-05-002 |
+| `ReceiveIncomingTransfer` | Coordinar aceptación y crédito único. | CI-05-003 |
+| `CancelTransfer` | Impedir ejecución cuando pueda confirmarse. | CI-05-004 |
+| `ReturnTransfer` | Restituir principal en una operación vinculada. | CI-05-005 |
+| `GetTransfer` | Consultar hechos, importes y pendientes. | CI-05-006 |
+| `GetTransferAction` | Recuperar el resultado de una petición. | CI-05-006 |
+| `SearchTransfers` | Buscar por identidad externa completa. | CI-05-006 |
 
 Estos ocho nombres permiten reconocer las operaciones públicas. Además existen continuaciones internas:
 `RecoverRemoteStep`, `IncorporateExternalResult` y `ResumeTransferWork`. No representan nuevas
@@ -62,15 +62,15 @@ y una devolución posterior con otro `returnEffectId`. No son tres transferencia
 
 ### 2.4. Hechos que nunca se confunden
 
-| Hecho o resultado        | Qué permite afirmar                        | Qué NO permite afirmar                         |
-|--------------------------|--------------------------------------------|------------------------------------------------|
-| `RECEIVED`               | La instrucción se recibió y registró.      | Que el dinero se movió.                        |
-| `ACCEPTED_FOR_EXECUTION` | Se admitió para ejecutar.                  | Que se acreditó al beneficiario.               |
-| `DISPATCHED`             | La instrucción salió al mecanismo.         | Que el receptor la aceptó firmemente.          |
-| `IRREVOCABLY_ACCEPTED`   | Existe aceptación firme del receptor.      | Que ya ocurrió el crédito.                     |
-| `BENEFICIARY_CREDITED`   | Se comprobó la acreditación.               | Que ya se liquidó entre entidades.             |
-| `EXTERNALLY_SETTLED`     | La autoridad confirmó liquidación externa. | Que liquidar sea otro crédito al cliente.      |
-| `RETURNED`               | Existe devolución posterior confirmada.    | Que se haya borrado la transferencia original. |
+| Hecho | Qué afirma | Qué no afirma |
+|---|---|---|
+| `RECEIVED` | La instrucción se recibió y registró. | Que el dinero se movió. |
+| `ACCEPTED_FOR_EXECUTION` | Se admitió para ejecutar. | Que se acreditó al beneficiario. |
+| `DISPATCHED` | La instrucción salió al mecanismo. | Que el receptor la aceptó firmemente. |
+| `IRREVOCABLY_ACCEPTED` | Existe aceptación firme. | Que ya ocurrió el crédito. |
+| `BENEFICIARY_CREDITED` | Se comprobó la acreditación. | Que ya se liquidó entre entidades. |
+| `EXTERNALLY_SETTLED` | La autoridad confirmó la liquidación. | Que liquidar sea otro crédito al cliente. |
+| `RETURNED` | Existe devolución posterior confirmada. | Que se borró la transferencia original. |
 
 Un timeout no es un hecho financiero. La ausencia de respuesta tampoco demuestra rechazo ni cancelación.
 
@@ -84,6 +84,10 @@ Un timeout no es un hecho financiero. La ausencia de respuesta tampoco demuestra
 - La clave técnica `Idempotency-Key` no reemplaza la identidad del efecto monetario.
 - La repetición de un evento o mensaje tampoco debe repetir débitos, créditos o devoluciones.
 
+La identidad de origen de una instrucción se conserva mediante `(originService, originType, originReference)`.
+La obtiene o valida el caso de uso a partir de su procedencia; no se sustituye por `actionId`,
+`Idempotency-Key` ni por la referencia de un mensaje de transporte.
+
 ### 3.2. Contenido autorizado
 
 La conformidad comprende ordenante, representado cuando exista, cuenta origen, destino resuelto, beneficiario,
@@ -91,6 +95,11 @@ principal, moneda, cargos aceptados, finalidad y las obligaciones, mandatos u oc
 
 Si cambia materialmente ese contenido, se necesitan las comprobaciones y la aceptación que correspondan.
 El destino aceptado se conserva incluso si posteriormente cambia el alias que se utilizó para resolverlo.
+
+El `acceptedContentHash` de `AcceptedDestination` corresponde al destino presentado y aceptado.
+El `acceptedContentHash` de `Transfer` corresponde al contenido vinculante de la instrucción completa.
+Cada huella se comprueba contra su contenido canónico y versión de canonicalización; no se exige igualdad
+entre ambas huellas. La huella recibida de una operación externa tiene su propio contenido y esquema.
 
 ### 3.3. Datos y exactitud monetaria
 
@@ -116,23 +125,26 @@ El destino aceptado se conserva incluso si posteriormente cambia el alias que se
 
 La identidad del actor y del servicio procede de autenticación o delegación verificadas.
 Un campo enviado por el solicitante no demuestra, por sí mismo, que tenga facultades sobre una cuenta.
+El caso de uso debe recibir ese contexto verificado, sin exigir una clase Java llamada `RequestContext`.
 
 ### 3.5. Quién decide cada parte
 
-| Pregunta empresarial                     | Autoridad competente                  | Qué conserva Transferencias                     |
-|------------------------------------------|---------------------------------------|-------------------------------------------------|
-| ¿La cuenta existe y admite la operación? | Cuentas                               | Comprobación y referencia.                      |
-| ¿Qué cuenta corresponde a un alias?      | Identificación bancaria               | Destino resuelto y aceptado.                    |
-| ¿El actor representa al ordenante?       | Representación                        | Alcance, autorización y evidencia.              |
-| ¿Hay impedimentos o restricciones?       | Riesgo y cumplimiento                 | Resultado verificable pertinente.               |
-| ¿Qué cargos corresponden?                | Autoridades comerciales y tributarias | Conceptos y determinaciones.                    |
-| ¿Hay capacidad monetaria y se ejecutó?   | Fondos                                | Reserva, actuación, movimientos y resultados.   |
-| ¿Se envió, aceptó o acreditó afuera?     | Compensación y mecanismo              | Intercambio, hechos y evidencias.               |
-| ¿Se liquidó entre participantes?         | Tesorería                             | Referencias y hechos informados.                |
-| ¿Se aplicó una deuda de cliente?         | Pagos o acreedor                      | Relación con la instrucción, sin aplicar deuda. |
+| Pregunta | Autoridad | Qué conserva Transferencias |
+|---|---|---|
+| ¿La cuenta existe y admite la operación? | Cuentas | Comprobación y referencia. |
+| ¿Qué cuenta corresponde a un alias? | Identificación bancaria | Destino resuelto y aceptado. |
+| ¿El actor representa al ordenante? | Representación | Alcance, autorización y evidencia. |
+| ¿Hay impedimentos o restricciones? | Riesgo y cumplimiento | Resultado verificable. |
+| ¿Qué cargos corresponden? | Autoridades comerciales y tributarias | Conceptos y determinaciones. |
+| ¿Hay capacidad monetaria y se ejecutó? | Fondos | Reserva, actuación y movimientos. |
+| ¿Se envió, aceptó o acreditó afuera? | Compensación y mecanismo | Intercambio, hechos y evidencias. |
+| ¿Se liquidó entre participantes? | Tesorería | Referencias y hechos informados. |
+| ¿Se aplicó una deuda de cliente? | Pagos o acreedor | Relación con la instrucción, sin aplicar deuda. |
 
 Las comunicaciones con estas autoridades se expresan mediante contratos y puertos.
 El caso de uso decide **qué pedir y qué hacer con la respuesta**, no cómo funciona la autoridad.
+La capa de aplicación coordina las integraciones; `Transfer` y sus componentes protegen las invariantes
+e incorporan resultados comprobados sin invocar directamente a Fondos ni a Compensación.
 
 ### 3.6. Qué significa una operación persistente
 
@@ -195,6 +207,9 @@ El nombre orientativo del comando es `ExecuteInternalTransferCommand`.
 **Por qué importa cada dato:** las cuentas definen los extremos; el importe y la moneda definen el efecto;
 la autorización vincula al actor con el contenido exacto; los conceptos evitan confundir principal con cargos.
 
+La identidad de origen y el momento efectivo de recepción se obtienen y conservan al admitir la instrucción.
+Se comprueba la huella completa de `Transfer` contra su contenido, sin equipararla a la huella del destino.
+
 ### 4.2. Condiciones empresariales previas
 
 - Origen y destino son cuentas existentes, diferentes y habilitadas para la operación solicitada.
@@ -220,6 +235,9 @@ la autorización vincula al actor con el contenido exacto; los conceptos evitan 
 11. Incorporar la confirmación con ambos movimientos, o el rechazo definitivo, o una incertidumbre identificada.
 12. Confirmar localmente resultado, evidencias, historia y comunicación pendiente del cambio.
 13. Entregar al solicitante el resultado y las referencias necesarias para consultar el seguimiento.
+
+`Transfer` protege el contenido y la evolución de la instrucción. `TransferMonetaryExecution` conserva
+la intención y el resultado de Fondos; la capa de aplicación coordina la petición monetaria indivisible.
 
 ### 4.4. Qué debe devolver
 
@@ -267,6 +285,7 @@ conjunto que deja 70 en origen y 50 en destino. Transferencias conserva el resul
 - Probar un resultado confirmado, una ejecución rechazada y una respuesta perdida después del efecto.
 - Probar que la petición repetida no origina dos conjuntos monetarios.
 - Comprobar que el mismo origen y destino nunca llega como ejecución válida a Fondos.
+- Probar que el contenido autorizado y el destino aceptado se validan con sus propias huellas.
 
 **Aprendizaje central:** orquestar un efecto bancario indivisible sin administrar el recurso monetario.
 
@@ -303,6 +322,8 @@ El nombre orientativo del comando es `SendOutgoingTransferCommand`.
 
 La identidad externa que entrega el mecanismo puede conocerse después de aceptar o enviar la solicitud.
 No debe inventarse una referencia definitiva antes de que su autoridad la informe.
+La identidad de origen de la instrucción y su huella completa se conservan independientemente del
+destino aceptado. La huella del destino no se compara por igualdad con la huella de toda la instrucción.
 
 ### 5.2. Condiciones empresariales previas
 
@@ -331,6 +352,10 @@ No debe inventarse una referencia definitiva antes de que su autoridad la inform
 14. Si una llamada o resultado es incierto, conservar cobertura, evidencia y seguimiento de la actuación original.
 15. Registrar los hechos y resultados locales junto a historial y comunicación recuperable del cambio.
 16. Entregar resultado y referencias sin traducir un acuse técnico como acreditación.
+
+`TransferOutgoingExecution` conserva cobertura y avance externo; `TransferExternalOperation` conserva
+la identidad externa cuando la autoridad la informa. `TransferRemoteStep` protege las actuaciones
+recuperables. Ninguno de estos componentes envía dinero o mensajes por sí mismo.
 
 Este circuito puede durar más que la primera petición. El solicitante necesita una referencia consultable.
 
@@ -400,10 +425,10 @@ compromiso irrevocable y, si se acepta, coordinar un único crédito mediante Fo
 
 El nombre orientativo del comando es `ReceiveIncomingTransferCommand`.
 
-| Dato                   | Tipo Java                    | Para qué se necesita                          |
+| Dato                   | Tipo o representación       | Para qué se necesita                          |
 |------------------------|------------------------------|-----------------------------------------------|
 | `context`              | `ActionContext`              | Identidad y causa de la actuación.            |
-| `externalOperation`    | `ExternalOperationReference` | Participante, mecanismo y referencia externa. |
+| `externalOperation`    | Referencia externa tipada   | Participante, mecanismo y referencia externa. |
 | `orderingParty`        | `ObjectReference`            | Ordenante informado por el origen.            |
 | `beneficiaryReference` | `ObjectReference`            | Beneficiario cuando el mecanismo lo exige.    |
 | `destinationAccountId` | `UUID`                       | Cuenta que recibiría el crédito.              |
@@ -414,8 +439,13 @@ El nombre orientativo del comando es `ReceiveIncomingTransferCommand`.
 | `evidenceReferences`   | `List<ObjectReference>`      | Evidencias de recepción.                      |
 | `receivedContentHash`  | `String`                     | Huella que permite comprobar repeticiones.    |
 
-La referencia externa de negocio utiliza `(participantId, mechanismCode, externalOperationId)`.
+El contrato denomina `ExternalOperationReference` a la estructura con participante, mecanismo, versión y
+referencia externa. Esa estructura es obligatoria, pero no exige otra clase Java de dominio si
+`TransferExternalOperation` ya conserva sus cuatro datos y la comprobación de repeticiones.
+La identidad externa de negocio utiliza `(participantId, mechanismCode, externalOperationId)`.
 `mechanismVersion` identifica el esquema, pero **no** crea una operación nueva si cambió la versión.
+El `receivedContentHash` se contrasta con el contenido externo original conservado en
+`TransferExternalOperation`; no se equipara automáticamente al `acceptedContentHash` de `Transfer`.
 
 ### 6.2. Condiciones empresariales previas
 
@@ -443,6 +473,11 @@ La referencia externa de negocio utiliza `(participantId, mechanismCode, externa
 13. Pedir a Fondos el crédito identificado, fuera de la transacción SQL local.
 14. Incorporar la confirmación del crédito, o mantener su incertidumbre y la referencia original.
 15. Informar a Compensación los hechos comprobados y los componentes cuya resolución continúa.
+
+La identidad de origen de `Transfer` se obtiene del emisor y de la instrucción reconocida.
+`TransferIncomingAcceptance` conserva verificaciones y aceptación firme; `TransferExternalOperation`
+conserva la identidad del participante. `TransferMonetaryExecution` registra la actuación de crédito
+de Fondos. La aplicación coordina la acreditación sin ejecutarla dentro del agregado.
 
 ### 6.4. Qué debe devolver
 
@@ -491,6 +526,7 @@ El banco conserva una sola recepción y pide un único crédito, aunque lleguen 
 - Probar recepción duplicada, contenido contradictorio y cambio de versión del mecanismo.
 - Probar cuenta inexistente, restricción solo de débito y respuesta perdida de Fondos.
 - Confirmar que una recepción aceptada firmemente mantiene seguimiento hasta resolver el efecto.
+- Contrastar el contenido externo original sin confundir su huella con la de la instrucción local.
 
 **Aprendizaje central:** deduplicación empresarial, seguridad entre servicios y compromiso posterior a la aceptación.
 
@@ -544,6 +580,9 @@ No se identifica una cancelación únicamente con `transferId`: una instrucción
 12. Solo al demostrar ausencia de ejecución pendiente, coordinar el tratamiento de cobertura con Fondos.
 13. Si ya hubo acreditación, conservar el hecho y comunicar que corresponde un retorno, no una cancelación ficticia.
 14. Registrar resultado, pendientes, historia y comunicación recuperable del cambio.
+
+`TransferCancellation` conserva la actuación, la decisión y su evidencia. `Transfer` ordena la
+barrera `dispatchBarrier` frente al despacho; la petición externa la coordina la capa de aplicación.
 
 ### 7.4. Qué debe devolver
 
@@ -600,8 +639,8 @@ Una decisión debe prevalecer con protección transaccional; no puede quedar can
 **Problema empresarial:** el dinero ya fue acreditado y corresponde devolverlo total o parcialmente.
 El banco debe impedir que distintas solicitudes devuelvan más que el principal disponible.
 
-**Responsabilidad:** comprobar fundamento, importe y destino de retorno; reservar el remanente que se compromete;
-coordinar un efecto de devolución único y conservar su relación con la transferencia original.
+**Responsabilidad:** comprobar fundamento, importe y destino de retorno; comprometer atómicamente el importe
+solicitado sin exceder el remanente; coordinar un efecto único de devolución y vincularlo a la transferencia.
 
 **Contrato:** CI-05-005, `POST /v1/transfers/{transferId}/returns`.
 
@@ -665,6 +704,11 @@ Una devolución adicional de 50 no se admite, aunque una consulta superficial in
 12. Si el rechazo definitivo prueba que no se ejecutará, liberar el compromiso de manera consistente.
 13. Si el resultado es incierto, conservar el importe pendiente y recuperar la actuación original.
 14. Incorporar evidencias, resultado, remanentes e historia, sin borrar ni alterar la transferencia original.
+
+`TransferReturnControl` protege la ecuación económica y `TransferReturn` identifica cada devolución.
+Ambos cambios se confirman localmente de forma atómica. `TransferReturnStep` conserva la intención
+remota del retorno para recuperarla sin duplicar `returnEffectId`. El control del remanente no crea
+una reserva de Fondos ni modifica el saldo de ninguna cuenta.
 
 ### 8.5. Qué debe devolver
 
@@ -856,11 +900,15 @@ Buscar solo por ese número podría devolver la transferencia equivocada o expon
 
 El nombre orientativo de la consulta es `SearchTransfersQuery`.
 
-| Dato                 | Tipo Java                    | Para qué se necesita               |
+| Dato                 | Tipo o representación       | Para qué se necesita               |
 |----------------------|------------------------------|------------------------------------|
 | `purpose`            | `String`                     | Finalidad autorizada de búsqueda.  |
-| `externalOperation`  | `ExternalOperationReference` | Identidad externa contextualizada. |
+| `externalOperation`  | Referencia externa tipada   | Identidad externa contextualizada. |
 | Contexto autenticado | Identidad y alcance          | Restringir la información visible. |
+
+El contrato utiliza la estructura `ExternalOperationReference` completa. El caso de uso puede recibir una
+representación tipada equivalente sin exigir una clase de dominio adicional; la búsqueda conserva los
+cuatro datos y utiliza la clave de negocio sin `mechanismVersion`.
 
 ### 11.2. Recorrido empresarial
 
@@ -920,6 +968,10 @@ respaldadas por el resultado comprobado.
 | `resultReference`              | `ObjectReference` condicional | Vincular el resultado ya conocido.          |
 | `lastCheckedAt`, `nextCheckAt` | `Instant`                     | Ordenar seguimiento recuperable.            |
 
+Una actuación de transferencia se conserva en `TransferRemoteStep`; la de una devolución, en
+`TransferReturnStep`. Cada paso mantiene contenido e identidades originales y es único por propietario
+y componente. Ninguno puede sustituir una actuación remota incierta por otra identidad económica.
+
 **Recorrido empresarial:**
 
 1. Recuperar la intención original y su propietario, sin reconstruir un efecto nuevo.
@@ -969,6 +1021,9 @@ e incluso repetirse o llegar fuera de orden. No puede crear otro movimiento ni c
 | `sourceFactVersion` | `long`             | Distinguir versiones de un hecho.         |
 | `fact`              | `ConfirmedFact`    | Contenido comprobado y evidencias.        |
 | `relatedActionId`   | `UUID` condicional | Vincularlo con la actuación original.     |
+
+`ConfirmedFact` expresa el hecho comunicado; `TransferFact` conserva su identidad local y la
+clave de deduplicación `(transferId, sourceService, sourceFactId, sourceFactVersion)`.
 
 **Recorrido empresarial:**
 
@@ -1096,17 +1151,17 @@ No es necesario ejecutar toda una plataforma bancaria para estudiar estas operac
 Cada autoridad que intervenga en el recorrido debe estar accesible mediante un contrato equivalente,
 real o simulado, sin que Transferencias adopte su lógica empresarial.
 
-| Autoridad               | Qué se le pide                                                  | Casos de uso principales                   |
-|-------------------------|-----------------------------------------------------------------|--------------------------------------------|
-| Cuentas                 | Existencia, condiciones, capacidades y facultades.              | Interna, saliente, entrante.               |
-| Identificación bancaria | Resolver identificadores antes de aceptar destino.              | Interna, saliente.                         |
-| Representación          | Comprobar facultades para el actor y contenido.                 | Interna, saliente, cancelación.            |
-| Riesgo y cumplimiento   | Comprobar controles y restricciones pertinentes.                | Interna, saliente, entrante.               |
-| Condiciones comerciales | Determinar cargos y condiciones aplicables.                     | Interna, saliente.                         |
-| Fondos                  | Reservar, ejecutar, consumir, liberar y recuperar efectos.      | Interna, saliente, entrante, retorno.      |
-| Compensación            | Enviar, consultar, cancelar e informar resultados.              | Saliente, entrante, cancelación, retorno.  |
-| Cambio de moneda        | Proveer conversión expresamente autorizada.                     | Cuando exista transferencia entre monedas. |
-| Otras autoridades       | Aportar permisos, evidencia o decisión si el circuito lo exige. | Según finalidad y modalidad.               |
+| Autoridad | Solicitud | Casos de uso |
+|---|---|---|
+| Cuentas | Existencia, condiciones, capacidades y facultades. | Interna, saliente, entrante. |
+| Identificación bancaria | Resolver identificadores para aceptar el destino. | Interna, saliente. |
+| Representación | Comprobar facultades del actor y contenido. | Interna, saliente, cancelación. |
+| Riesgo y cumplimiento | Comprobar controles y restricciones. | Interna, saliente, entrante. |
+| Condiciones comerciales | Determinar cargos y condiciones. | Interna, saliente. |
+| Fondos | Reservar, ejecutar, consumir, liberar y recuperar. | Interna, saliente, entrante, retorno. |
+| Compensación | Enviar, consultar, cancelar e informar resultados. | Saliente, entrante, cancelación, retorno. |
+| Cambio de moneda | Proveer conversión autorizada. | Transferencias entre monedas. |
+| Otras autoridades | Aportar permisos, evidencia o decisión requerida. | Según finalidad y modalidad. |
 
 ### 14.1. Qué debe poder hacer un simulador contractual
 
@@ -1318,15 +1373,15 @@ Pasar una compilación no demuestra por sí mismo ninguna de estas garantías em
 
 ### 17.7. Qué demuestra cada tipo de prueba
 
-| Prueba                   | Qué permite comprobar                                   | Qué no demuestra por sí sola           |
-|--------------------------|---------------------------------------------------------|----------------------------------------|
-| Validación de datos      | Formatos, obligatoriedad y condiciones locales.         | Integridad bajo concurrencia.          |
-| Prueba de caso de uso    | Secuencia de decisiones y llamadas esperadas.           | Durabilidad de PostgreSQL real.        |
-| Prueba de integración    | Contratos, respuestas y recuperación entre componentes. | Todos los fallos posibles.             |
-| Prueba transaccional     | Atomicidad y restricciones persistentes.                | Ausencia de duplicados remotos.        |
-| Prueba concurrente       | Carreras entre despacho, cancelación y devoluciones.    | Resistencia a reinicios sin probarlos. |
-| Prueba de recuperación   | Continuar desde la intención original.                  | Permisos de todos los actores.         |
-| Prueba de observabilidad | Visibilidad de hechos y pendientes.                     | Efectos sin prueba de su autoridad.    |
+| Prueba | Qué comprueba | Qué no demuestra por sí sola |
+|---|---|---|
+| Validación de datos | Formatos, obligatoriedad y condiciones locales. | Integridad concurrente. |
+| Caso de uso | Secuencia de decisiones y llamadas. | Durabilidad de PostgreSQL. |
+| Integración | Contratos, respuestas y recuperación. | Todos los fallos posibles. |
+| Transaccional | Atomicidad y restricciones persistentes. | Ausencia de duplicados remotos. |
+| Concurrencia | Carreras entre despacho, cancelación y devoluciones. | Resistencia a reinicios. |
+| Recuperación | Continuar desde la intención original. | Permisos de todos los actores. |
+| Observabilidad | Visibilidad de hechos y pendientes. | Autoridad de los efectos. |
 
 ## 18. Recorridos completos para estudiar la lógica empresarial
 

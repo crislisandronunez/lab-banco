@@ -32,6 +32,8 @@ public record MonetaryConcept(
     if (amount.scale() > 2) {
       throw new DomainInvariantException("amount no puede tener más de dos decimales.");
     }
+    if (componentType == MonetaryComponentType.PRINCIPAL && amount.signum() <= 0)
+      throw new DomainInvariantException("El concepto PRINCIPAL debe ser positivo.");
     if (currency == null) {
       throw new DomainInvariantException("currency es obligatorio.");
     }

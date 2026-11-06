@@ -44,9 +44,13 @@ public record AcceptedDestination(
     if (bankIdentifierType != null && bankIdentifierType.isBlank()) {
       throw new DomainInvariantException("bankIdentifierType no puede estar vacío.");
     }
+    if (bankIdentifierType != null && bankIdentifierType.length() > 80)
+      throw new DomainInvariantException("bankIdentifierType no puede exceder 80 caracteres.");
     if (bankIdentifierValue != null && bankIdentifierValue.isBlank()) {
       throw new DomainInvariantException("bankIdentifierValue no puede estar vacío.");
     }
+    if (bankIdentifierValue != null && bankIdentifierValue.length() > 120)
+      throw new DomainInvariantException("bankIdentifierValue no puede exceder 120 caracteres.");
     if (beneficiaryDisplayName != null && beneficiaryDisplayName.length() > 250) {
       throw new DomainInvariantException("beneficiaryDisplayName excede los 250 caracteres permitidos.");
     }
@@ -58,6 +62,8 @@ public record AcceptedDestination(
       if (participantReference != null) {
         throw new DomainInvariantException("participantReference debe ser nulo para un destino interno.");
       }
+      if (beneficiaryReference == null)
+        throw new DomainInvariantException("beneficiaryReference es obligatorio para destino interno.");
     } else if (destinationType == DestinationType.EXTERNAL) {
       if (participantReference == null) {
         throw new DomainInvariantException("participantReference es obligatorio para un destino externo.");
@@ -65,6 +71,8 @@ public record AcceptedDestination(
       if (accountReference != null) {
         throw new DomainInvariantException("accountReference debe ser nulo para un destino externo.");
       }
+      if (beneficiaryReference == null && bankIdentifierValue == null)
+        throw new DomainInvariantException("El destino externo requiere beneficiario o identificador bancario.");
     }
   }
 }

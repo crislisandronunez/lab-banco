@@ -5,6 +5,7 @@ import com.lab.transferencias.domain.enums.Currency;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import com.lab.transferencias.domain.valueobject.ObjectReference;
 
 /**
  * Solicitud de reserva de fondos para proteger la cobertura de una transferencia antes de su ejecución.
@@ -16,8 +17,12 @@ public record FundsReservationRequest(
     BigDecimal amount,
     Currency currency,
     List<MonetaryConcept> concepts,
-    String authorizationReference,
-    String reservationReference
+    ObjectReference authorizationReference,
+    ObjectReference reservationReference
 ) {
+
+  public FundsReservationRequest {
+    concepts = List.copyOf(concepts);
+  }
 }
 

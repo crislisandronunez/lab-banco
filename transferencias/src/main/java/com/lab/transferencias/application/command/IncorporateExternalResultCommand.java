@@ -1,6 +1,7 @@
 package com.lab.transferencias.application.command;
 
 import com.lab.transferencias.domain.valueobject.ObjectReference;
+import com.lab.transferencias.domain.valueobject.ConfirmedFact;
 import java.util.UUID;
 
 /**
@@ -10,10 +11,12 @@ import java.util.UUID;
 public record IncorporateExternalResultCommand(
     ActionContext context,
     UUID transferId,
-    String remoteActionId,
-    String resultCode,
-    ObjectReference evidenceReference,
-    String resultMessage
+    ObjectReference sourceReference,
+    UUID sourceFactId,
+    long sourceFactVersion,
+    ConfirmedFact fact,
+    UUID relatedActionId,
+    UUID messageId
 ) {
 
   public IncorporateExternalResultCommand {
@@ -23,18 +26,9 @@ public record IncorporateExternalResultCommand(
     if (transferId == null) {
       throw new IllegalArgumentException("transferId no puede ser nulo.");
     }
-    if (remoteActionId == null || remoteActionId.isBlank()) {
-      throw new IllegalArgumentException("remoteActionId no puede ser nulo ni vacío.");
-    }
-    if (resultCode == null || resultCode.isBlank()) {
-      throw new IllegalArgumentException("resultCode no puede ser nulo ni vacío.");
-    }
-    if (evidenceReference == null) {
-      throw new IllegalArgumentException("evidenceReference no puede ser nulo.");
-    }
-    if (resultMessage == null || resultMessage.isBlank()) {
-      throw new IllegalArgumentException("resultMessage no puede ser nulo ni vacío.");
-    }
+    if (sourceReference == null || sourceFactId == null || fact == null || messageId == null)
+      throw new IllegalArgumentException("sourceReference, sourceFactId, fact y messageId son obligatorios.");
+    if (sourceFactVersion <= 0) throw new IllegalArgumentException("sourceFactVersion debe ser positiva.");
   }
 }
 

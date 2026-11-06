@@ -16,7 +16,7 @@ public class TransferExternalOperation {
   private final long mechanismVersion;
   private final String externalOperationId;
   private final String externalContentHash;
-  private final ObjectReference exchangeReference;
+  private ObjectReference exchangeReference;
   private final long schemaVersion;
 
   private TransferExternalOperation(
@@ -37,12 +37,14 @@ public class TransferExternalOperation {
     if (mechanismCode == null || mechanismCode.isBlank()) {
       throw new DomainInvariantException("mechanismCode no puede ser nulo ni vacío.");
     }
+    if (mechanismCode.length() > 80) throw new DomainInvariantException("mechanismCode excede 80 caracteres.");
     if (mechanismVersion <= 0) {
       throw new DomainInvariantException("mechanismVersion debe ser positivo.");
     }
     if (externalOperationId == null || externalOperationId.isBlank()) {
       throw new DomainInvariantException("externalOperationId no puede ser nulo ni vacío.");
     }
+    if (externalOperationId.length() > 120) throw new DomainInvariantException("externalOperationId excede 120 caracteres.");
     if (externalContentHash == null || !externalContentHash.matches("^[a-fA-F0-9]{64}$")) {
       throw new DomainInvariantException("externalContentHash debe ser un SHA-256 hexadecimal de 64 caracteres.");
     }
@@ -95,11 +97,28 @@ public class TransferExternalOperation {
     return Objects.equals(this.externalContentHash, expectedHash);
   }
 
+  public String businessKey() {
+    return participantId + "|" + mechanismCode + "|" + externalOperationId;
+  }
+
+  public boolean sameBusinessIdentity(TransferExternalOperation other) {
+    return other != null && matchesExternalIdentity(other.participantId, other.mechanismCode, other.externalOperationId);
+  }
+
+  public boolean sameFullContent(TransferExternalOperation other) {
+    return sameBusinessIdentity(other)
+        && mechanismVersion == other.mechanismVersion
+        && schemaVersion == other.schemaVersion
+        && verifyContentConsistency(other.externalContentHash);
+  }
+
   public void attachExchangeReference(ObjectReference exchangeReference) {
     if (exchangeReference == null) {
       throw new DomainInvariantException("exchangeReference no puede ser nula.");
     }
-    // mantiene el valor inmutable del agregado; la referencia se conserva en la creación
+    if (this.exchangeReference != null && !this.exchangeReference.equals(exchangeReference))
+      throw new DomainInvariantException("exchangeReference ya fue fijada y no puede cambiar.");
+    this.exchangeReference = exchangeReference;
   }
 
   public UUID getTransferId() { return transferId; }

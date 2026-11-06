@@ -15,5 +15,7 @@ public interface TransferOutboxRepository {
 
   List<OutboxEventRecord> findPendingByTransferId(UUID transferId);
 
+  List<OutboxEventRecord> findPending(int limit);
+
   Optional<OutboxEventRecord> findById(UUID eventId);
 }

@@ -33,15 +33,19 @@ public class TransferReturnControl {
     if (originalPrincipal == null || originalPrincipal.signum() <= 0) {
       throw new DomainInvariantException("originalPrincipal debe ser mayor que cero.");
     }
+    validateScale(originalPrincipal, "originalPrincipal");
     if (returnedAmount == null || returnedAmount.signum() < 0) {
       throw new DomainInvariantException("returnedAmount no puede ser negativo.");
     }
+    validateScale(returnedAmount, "returnedAmount");
     if (pendingAmount == null || pendingAmount.signum() < 0) {
       throw new DomainInvariantException("pendingAmount no puede ser negativo.");
     }
+    validateScale(pendingAmount, "pendingAmount");
     if (remainingAmount == null || remainingAmount.signum() < 0) {
       throw new DomainInvariantException("remainingAmount no puede ser negativo.");
     }
+    validateScale(remainingAmount, "remainingAmount");
     if (originalPrincipal.compareTo(returnedAmount.add(pendingAmount).add(remainingAmount)) != 0) {
       throw new DomainInvariantException("La suma de importes devueltos, pendientes y remanente debe igualar el principal original.");
     }
@@ -50,7 +54,8 @@ public class TransferReturnControl {
     this.returnedAmount = returnedAmount;
     this.pendingAmount = pendingAmount;
     this.remainingAmount = remainingAmount;
-    this.lockVersion = lockVersion >= 0 ? lockVersion : 0L;
+    if (lockVersion < 0) throw new DomainInvariantException("lockVersion no puede ser negativa.");
+    this.lockVersion = lockVersion;
     this.updatedAt = updatedAt == null ? Instant.now() : updatedAt;
   }
 
@@ -122,6 +127,10 @@ public class TransferReturnControl {
     if (amount.scale() > 2) {
       throw new DomainInvariantException("amount no puede tener más de dos decimales.");
     }
+  }
+
+  private static void validateScale(BigDecimal amount, String name) {
+    if (amount.scale() > 2) throw new DomainInvariantException(name + " no puede tener más de dos decimales.");
   }
 
   public UUID getTransferId() { return transferId; }

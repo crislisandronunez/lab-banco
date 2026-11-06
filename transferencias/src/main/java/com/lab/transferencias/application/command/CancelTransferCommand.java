@@ -1,6 +1,7 @@
 package com.lab.transferencias.application.command;
 
 import java.util.UUID;
+import com.lab.transferencias.domain.valueobject.AuthorizationBasis;
 
 /**
  * Comando para cancelar una transferencia en curso.
@@ -10,7 +11,7 @@ public record CancelTransferCommand(
     ActionContext context,
     UUID transferId,
     String reason,
-    Long expectedVersion
+    AuthorizationBasis authorizationBasis
 ) {
 
   public CancelTransferCommand {
@@ -23,8 +24,8 @@ public record CancelTransferCommand(
     if (reason == null || reason.isBlank()) {
       throw new IllegalArgumentException("reason no puede ser nulo ni vacío.");
     }
-    if (expectedVersion != null && expectedVersion <= 0) {
-      throw new IllegalArgumentException("expectedVersion debe ser positivo cuando se informa.");
+    if (authorizationBasis == null) {
+      throw new IllegalArgumentException("authorizationBasis no puede ser nulo.");
     }
   }
 }

@@ -47,6 +47,7 @@ public class TransferFact {
     if (sourceService == null || sourceService.isBlank()) {
       throw new DomainInvariantException("sourceService no puede ser nulo ni vacío.");
     }
+    if (sourceService.length() > 80) throw new DomainInvariantException("sourceService no puede exceder 80 caracteres.");
     if (sourceFactId == null) {
       throw new DomainInvariantException("sourceFactId es obligatorio.");
     }
@@ -68,6 +69,8 @@ public class TransferFact {
     this.occurredAt = occurredAt;
     this.sourceReference = sourceReference;
     this.evidenceReferences = immutableReferences(evidenceReferences);
+    if (this.evidenceReferences.isEmpty())
+      throw new DomainInvariantException("Un hecho de origen requiere evidencia.");
   }
 
   public static TransferFact create(
@@ -102,6 +105,13 @@ public class TransferFact {
     return Objects.equals(this.sourceService, sourceService)
         && Objects.equals(this.sourceFactId, sourceFactId)
         && this.sourceFactVersion == sourceFactVersion;
+  }
+
+  public boolean sameOriginContent(TransferFact other) {
+    return other != null && matchesOriginIdentity(other.sourceService, other.sourceFactId, other.sourceFactVersion)
+        && transferId.equals(other.transferId) && factType == other.factType
+        && occurredAt.equals(other.occurredAt) && sourceReference.equals(other.sourceReference)
+        && evidenceReferences.equals(other.evidenceReferences);
   }
 
   private static List<ObjectReference> immutableReferences(List<ObjectReference> source) {
