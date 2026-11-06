@@ -135,7 +135,7 @@ El caso de uso debe recibir ese contexto verificado, sin exigir una clase Java l
 | ¿Qué cuenta corresponde a un alias? | Identificación bancaria | Destino resuelto y aceptado. |
 | ¿El actor representa al ordenante? | Representación | Alcance, autorización y evidencia. |
 | ¿Hay impedimentos o restricciones? | Riesgo y cumplimiento | Resultado verificable. |
-| ¿Qué cargos corresponden? | Autoridades comerciales y tributarias | Conceptos y determinaciones. |
+| ¿Qué cargos corresponden? | Transferencias determina los conceptos propios; las autoridades comerciales y tributarias aportan condiciones y criterios. | Determinación, concepto, hecho generador y evidencia. |
 | ¿Hay capacidad monetaria y se ejecutó? | Fondos | Reserva, actuación y movimientos. |
 | ¿Se envió, aceptó o acreditó afuera? | Compensación y mecanismo | Intercambio, hechos y evidencias. |
 | ¿Se liquidó entre participantes? | Tesorería | Referencias y hechos informados. |
@@ -171,8 +171,9 @@ devoluciones comprometidas, trabajos de recuperación y eventos que aún deben e
 - **Métricas:** cantidades, tiempos y componentes pendientes; sin usar clientes ni cuentas como etiquetas.
 - **Recuperación:** conservar intención, referencias y siguiente consulta; no reemplazar evidencia por un timeout.
 
-La consulta ante incertidumbre se realiza al detectarla, a los cinco minutos, a los treinta minutos y,
-si continúa sin resolverse, durante cada jornada operativa. Ningún plazo autoriza repetir un efecto o liberar fondos.
+La consulta ante incertidumbre se realiza al detectarla, a los cinco minutos y a los treinta minutos. Si persiste,
+se abre una investigación y se revisa durante cada jornada operativa. Ningún plazo autoriza repetir un efecto,
+liberar fondos ni declarar un rechazo.
 
 ## 4. `ExecuteInternalTransfer` — Ejecutar transferencia interna
 
@@ -219,6 +220,7 @@ Se comprueba la huella completa de `Transfer` contra su contenido, sin equiparar
 - El principal es positivo, de escala correcta y coherente con la moneda.
 - Una operación entre monedas distintas necesita conversión expresamente identificada.
 - Una consulta informativa de saldo no sustituye la decisión definitiva que toma Fondos al ejecutar.
+- El descubierto no se presume: solo puede formar parte de la cobertura si es compatible con producto, cuenta y concepto y está expresamente habilitado por las condiciones aplicables; una opción del solicitante no basta.
 
 ### 4.3. Recorrido empresarial
 
@@ -227,14 +229,15 @@ Se comprueba la huella completa de `Transfer` contra su contenido, sin equiparar
 3. Recuperar el resultado anterior si es repetición coherente; informar conflicto si cambió el contenido.
 4. Verificar que las cuentas sean distintas y que el destino aceptado sea interno.
 5. Comprobar cuenta, capacidades, representación, autorización, restricciones y condiciones aplicables.
-6. Incorporar cargos y la referencia de conversión expresa, únicamente cuando correspondan.
-7. Conservar la instrucción bancaria con identidad estable, destino y autorización aceptados.
-8. Identificar el conjunto monetario solicitado, la actuación remota y sus efectos económicos.
-9. Confirmar localmente instrucción, actuación, idempotencia e intención recuperable.
-10. Pedir a Fondos la ejecución **conjunta** de débito y crédito, sin mantener abierta la transacción local.
-11. Incorporar la confirmación con ambos movimientos, o el rechazo definitivo, o una incertidumbre identificada.
-12. Confirmar localmente resultado, evidencias, historia y comunicación pendiente del cambio.
-13. Entregar al solicitante el resultado y las referencias necesarias para consultar el seguimiento.
+6. Determinar los conceptos propios de Transferencias con las condiciones comerciales y tributarias aplicables, conservando condición, hecho generador, base, bonificación, determinación tributaria e importe final; asociar el cargo a su efecto y evitar cobrar dos veces un mismo servicio si Pagos originó la operación.
+7. Incorporar la referencia de conversión expresa únicamente cuando corresponda.
+8. Conservar la instrucción bancaria con identidad estable, destino y autorización aceptados.
+9. Identificar el conjunto monetario solicitado, la actuación remota y sus efectos económicos.
+10. Confirmar localmente instrucción, actuación, idempotencia e intención recuperable.
+11. Pedir a Fondos la ejecución **conjunta** de débito y crédito, sin mantener abierta la transacción local.
+12. Incorporar la confirmación con ambos movimientos, o el rechazo definitivo, o una incertidumbre identificada.
+13. Confirmar localmente resultado, evidencias, historia y comunicación pendiente del cambio.
+14. Entregar al solicitante el resultado y las referencias necesarias para consultar el seguimiento.
 
 `Transfer` protege el contenido y la evolución de la instrucción. `TransferMonetaryExecution` conserva
 la intención y el resultado de Fondos; la capa de aplicación coordina la petición monetaria indivisible.
@@ -332,26 +335,29 @@ destino aceptado. La huella del destino no se compara por igualdad con la huella
 - El participante, mecanismo, moneda y condiciones aplicables están habilitados.
 - Se cumplieron las comprobaciones de cuenta, riesgo, restricciones, representación y cargos pertinentes.
 - Fondos constituyó o reconoció cobertura suficiente antes de habilitar el despacho.
+- El descubierto no se presume: solo se admite si las condiciones aplicables lo habilitan expresamente y es compatible con producto, cuenta y concepto; una opción del solicitante no basta.
 - La cancelación y el despacho deben ordenarse: no puede enviarse una transferencia ya cancelada.
 
 ### 5.3. Recorrido empresarial
 
 1. Reconocer la identidad y contenido de la instrucción y resolver duplicaciones o conflictos.
 2. Comprobar facultades, cuenta de origen, destino aceptado, mecanismo, restricciones y condiciones.
-3. Conservar `Transfer` y una intención recuperable de constituir reserva.
-4. Pedir a Fondos la reserva del principal y cargos autorizados, usando una identidad remota estable.
-5. Registrar la reserva confirmada o conservar el resultado incierto sin asumir que los fondos están libres.
-6. Preparar el intercambio por el mecanismo elegido y proteger la cobertura frente al despacho incierto.
-7. Ordenar localmente habilitación de despacho frente a una posible cancelación de esa instrucción.
-8. Comprobar que no existe barrera de despacho y registrar la intención externa antes de invocar al mecanismo.
-9. Solicitar el envío a Compensación, sin mantener abierta una transacción local de Transferencias.
-10. Registrar el hecho `DISPATCHED` solo cuando la autoridad confirme el envío.
-11. Registrar `IRREVOCABLY_ACCEPTED` solo con la aceptación firme del participante.
-12. Registrar `BENEFICIARY_CREDITED` únicamente con acreditación comprobada.
-13. Tras comprobar la acreditación, pedir a Fondos consumir la reserva con la identidad del efecto original.
-14. Si una llamada o resultado es incierto, conservar cobertura, evidencia y seguimiento de la actuación original.
-15. Registrar los hechos y resultados locales junto a historial y comunicación recuperable del cambio.
-16. Entregar resultado y referencias sin traducir un acuse técnico como acreditación.
+3. Determinar los cargos y tributos propios de Transferencias con los criterios comerciales y tributarios aplicables, registrando su hecho generador, base, determinación e identidad de efecto; si Pagos originó la operación, evitar cobrar dos veces el mismo servicio.
+4. Conservar `Transfer` y una intención recuperable de constituir reserva.
+5. Pedir a Fondos la reserva del principal y cargos autorizados, usando una identidad remota estable.
+6. Registrar la reserva confirmada o conservar el resultado incierto sin asumir que los fondos están libres.
+7. Preparar el intercambio por el mecanismo elegido y proteger la cobertura frente al despacho incierto.
+8. Ordenar localmente habilitación de despacho frente a una posible cancelación de esa instrucción.
+9. Comprobar que no existe barrera de despacho y registrar la intención externa antes de invocar al mecanismo.
+10. Solicitar el envío a Compensación, sin mantener abierta una transacción local de Transferencias.
+11. Registrar el hecho `DISPATCHED` solo cuando la autoridad confirme el envío.
+12. Registrar `IRREVOCABLY_ACCEPTED` solo con la aceptación firme del participante.
+13. Registrar `BENEFICIARY_CREDITED` únicamente con acreditación comprobada.
+14. Tras comprobar la acreditación, pedir a Fondos consumir la reserva con la identidad del efecto original.
+15. Informar a Compensación el hecho de transferencia acreditada y los datos requeridos para su incorporación, con identidad estable e idempotente para no duplicar la incorporación.
+16. Si una llamada o resultado es incierto, conservar cobertura, evidencia y seguimiento de la actuación original.
+17. Registrar los hechos y resultados locales junto a historial y comunicación recuperable del cambio.
+18. Entregar resultado y referencias sin traducir un acuse técnico como acreditación.
 
 `TransferOutgoingExecution` conserva cobertura y avance externo; `TransferExternalOperation` conserva
 la identidad externa cuando la autoridad la informa. `TransferRemoteStep` protege las actuaciones
@@ -471,7 +477,7 @@ El `receivedContentHash` se contrasta con el contenido externo original conserva
 11. Identificar `creditEffectId` y `remoteActionId` estables antes de solicitar el movimiento a Fondos.
 12. Confirmar localmente la aceptación, la intención de crédito, la historia y el seguimiento.
 13. Pedir a Fondos el crédito identificado, fuera de la transacción SQL local.
-14. Incorporar la confirmación del crédito, o mantener su incertidumbre y la referencia original.
+14. Incorporar la confirmación del crédito; ante incertidumbre consultar la actuación original; ante imposibilidad definitiva de acreditar, conservar la obligación y tramitar la resolución procedente (rechazo, retención o devolución conforme a la causa y al estado de aceptación), sin tratarla como un simple timeout ni afirmar un crédito inexistente.
 15. Informar a Compensación los hechos comprobados y los componentes cuya resolución continúa.
 
 La identidad de origen de `Transfer` se obtiene del emisor y de la instrucción reconocida.
@@ -647,6 +653,12 @@ solicitado sin exceder el remanente; coordinar un efecto único de devolución y
 ### 8.1. Información que recibe
 
 El nombre orientativo del comando es `ReturnTransferCommand`.
+
+Este comando describe una devolución iniciada localmente. Una devolución recibida desde el exterior es una entrada
+distinta: se reconoce por participante, mecanismo y referencia externa completa, se vincula a la transferencia original
+con evidencia de Compensación y se deduplica por esa identidad y contenido. Se registra su resultado o componente
+pendiente sin volver a solicitar el mismo efecto a Fondos ni duplicar la regularización. Si no puede vincularse con
+certeza, se conserva para investigación; no se aplica por similitud ni se acredita dos veces.
 
 | Dato                 | Tipo Java            | Para qué se necesita                            |
 |----------------------|----------------------|-------------------------------------------------|
@@ -1291,6 +1303,8 @@ Pasar una compilación no demuestra por sí mismo ninguna de estas garantías em
 | INT-10 | El alias cambia después de aceptar.         | Conservar destino originalmente aceptado. |
 | INT-11 | Monedas incompatibles sin conversión.       | No convertir implícitamente.              |
 | INT-12 | Reserva vinculada al conjunto.              | Consumir según contrato, sin otro débito. |
+| INT-13 | Se solicita descubierto sin habilitación expresa compatible. | No solicitar ejecución con descubierto. |
+| INT-14 | Cargo por ejecución antes de confirmar el hecho generador. | No registrar el cargo como cobrado; no duplicar cargos originados por Pagos. |
 
 ### 17.2. `SendOutgoingTransfer`
 
@@ -1308,6 +1322,9 @@ Pasar una compilación no demuestra por sí mismo ninguna de estas garantías em
 | OUT-10 | Envío incierto sin respuesta externa.   | Conservar cobertura y seguimiento.       |
 | OUT-11 | Rechazo externo definitivo sin efecto.  | Tratar reserva con evidencia suficiente. |
 | OUT-12 | Falla liquidación después del crédito.  | Conservar acreditación confirmada.       |
+| OUT-13 | No existe habilitación expresa compatible para descubierto. | No usarlo para constituir cobertura ni despachar. |
+| OUT-14 | Pagos originó una transferencia con cargo de servicio. | Determinar la causa una vez y evitar doble cobro entre coordinadores. |
+| OUT-15 | Acreditación confirmada todavía no incorporada a Compensación. | Informar el hecho con identidad idempotente; una repetición no duplica la incorporación. |
 
 ### 17.3. `ReceiveIncomingTransfer`
 
@@ -1320,9 +1337,10 @@ Pasar una compilación no demuestra por sí mismo ninguna de estas garantías em
 | IN-05 | Identidad externa igual con contenido distinto.     | Conflicto, sin otro crédito.             |
 | IN-06 | Mismo identificador en otro participante.           | Distinguir por la clave compuesta.       |
 | IN-07 | Cambia versión del mecanismo.                       | No crear otra identidad externa.         |
-| IN-08 | Se acepta irrevocablemente y falla el crédito.      | Conservar obligación y recuperación.     |
+| IN-08 | Se acepta irrevocablemente y Fondos rechaza definitivamente el crédito. | Conservar obligación y tramitar resolución o devolución procedente; no tratarlo como timeout. |
 | IN-09 | Fondos acredita, pero se pierde su respuesta.       | Recuperar `creditEffectId` original.     |
 | IN-10 | Mensaje externo duplicado.                          | Un único registro económico.             |
+| IN-11 | Tras aceptación firme se comprueba imposibilidad definitiva de acreditar. | Resolver mediante el procedimiento aplicable y conservar vínculo y evidencia; no dejarlo como mera incertidumbre. |
 
 ### 17.4. `CancelTransfer`
 
@@ -1351,6 +1369,7 @@ Pasar una compilación no demuestra por sí mismo ninguna de estas garantías em
 | RET-08 | Rechazo definitivo sin ejecución.              | Liberar compromiso acreditado.      |
 | RET-09 | El ordenante no puede debitar al beneficiario. | No ejecutar ese débito.             |
 | RET-10 | Se devuelve principal.                         | No revertir cargos automáticamente. |
+| RET-11 | Compensación informa una devolución externa ya recibida. | Vincularla por identidad externa completa; deduplicar y no solicitar ni aplicar dos veces el efecto. |
 
 ### 17.6. Consultas y continuaciones internas
 
