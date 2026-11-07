@@ -11,7 +11,7 @@ Este documento define la persistencia de los servicios del módulo Cuentas y fon
 | Fondos                  | Posiciones monetarias, reservas, movimientos, descubierto y afectaciones monetarias.                |
 | Operaciones de efectivo | Recepción y entrega física, coordinación monetaria y diferencias.                                   |
 
-Comprende los contratos CI-04-001 a CI-04-040, las preparaciones de Cuentas y los intentos de ejecución monetaria.
+Comprende los contratos CI-04-001 a CI-04-041, las preparaciones de Cuentas y los intentos de ejecución monetaria.
 
 Cada servicio mantiene su base PostgreSQL, usuario y migraciones. No existen FK, consultas SQL ni transacciones entre
 bases de servicios.
@@ -139,6 +139,7 @@ o un envoltorio con schemaCode, schemaVersion y data.
 | AccountParticipantDefinition | Actos, modalidad, fundamento y vigencia.                                    |
 | JointActionRule              | Grupos, integrantes, mínimo de actores distintos y actos alcanzados.        |
 | AccountChangeCommand         | Cambio solicitado, versión de origen y componentes.                         |
+| AccountOperationCheckInput    | Actores, representado, acto, destino, importe, moneda, finalidad, huella, momento y evidencia conjunta. |
 | AccountPreparationBasis      | Actores, acto, destino, importes y comprobaciones.                          |
 | BusinessBasis                | Tipo de fundamento, propietario, antecedente y evidencias.                  |
 | FundExecutionCommand         | Cuentas, efectos, conceptos, recursos y autoridades exigibles.              |
@@ -275,6 +276,42 @@ Estados: PENDING, CONFIRMED, REJECTED, UNCERTAIN y REQUIRES_REVIEW.
 La cuenta y sus intenciones se confirman antes de llamar a los propietarios.
 
 La inicialización de Fondos crea una posición cero sin movimiento monetario.
+
+### **4.5. account_operation_check**
+
+| **Columna**                   | **Tipo**     | **Nulabilidad** |
+|-------------------------------|--------------|-----------------|
+| check_id                      | uuid         | N, PK           |
+| account_id                    | uuid         | N               |
+| requester_service             | varchar(80)  | N               |
+| original_input                | jsonb        | N               |
+| original_account_version      | bigint       | N               |
+| created_at                    | timestamptz  | N               |
+| result                        | varchar(20)  | N               |
+| evaluated_account_version     | bigint       | S               |
+| evaluated_operational_version | bigint       | S               |
+| evaluated_at                  | timestamptz  | S               |
+| reason_code                   | varchar(80)  | S               |
+
+original_input utiliza el esquema AccountOperationCheckInput versionado. La identidad, la cuenta, el servicio
+solicitante, la entrada y la versión original son inmutables. La recuperación utiliza check_id y exige que coincidan
+la cuenta indicada y el alcance autorizado del solicitante.
+
+FK a cuenta y FK compuestas desde la cuenta y las versiones originales y evaluadas a sus respectivos historiales.
+original_account_version y evaluated_account_version referencian account_version.
+evaluated_operational_version referencia account_operational_version.
+
+CI-04-040 registra la comprobación antes de devolver check_id. PENDING exige que las versiones evaluadas,
+evaluated_at y reason_code sean nulos. ADMITTED y PREVENTED exigen ambas versiones evaluadas y evaluated_at.
+PREVENTED exige reason_code. ADMITTED conserva reason_code nulo.
+
+CI-04-041 evalúa el contenido original. Una falla que impide decidir conserva el registro pendiente.
+
+Para confirmar el resultado se bloquea primero la cuenta y luego la comprobación. Si el resultado ya es definitivo,
+se devuelve el resultado persistido. Si cambiaron las versiones evaluadas, se descarta la evaluación y se vuelve a
+evaluar fuera de la transacción de confirmación. Con las versiones vigentes, una actualización condicionada a PENDING
+registra la decisión, las versiones, el momento y el motivo en la misma transacción. Los resultados definitivos son
+inmutables.
 
 ## **5. Participantes y actuación conjunta**
 
@@ -573,7 +610,7 @@ El cambio:
 
 No invalida silenciosamente una preparación ni la libera por timeout.
 
-La comprobación informativa CI-04-040 no crea registros en authority_preparation.
+CI-04-040 y CI-04-041 utilizan account_operation_check. La preparación monetaria utiliza authority_preparation.
 
 ## **8. Cierre de cuentas**
 
@@ -2372,7 +2409,8 @@ al respaldo antes de reanudar.
 | CI-04-025                | Liquidaciones, cálculos, bases y ejecución.                                     |
 | CI-04-026 a CI-04-030    | Efectivo, hechos físicos, aplicaciones y diferencias.                           |
 | CI-04-031 a CI-04-039    | Outbox e historia de agregados.                                                 |
-| CI-04-040                | Comprobación informativa de condiciones de cuenta.                              |
+| CI-04-040                | Identidad y contenido de la comprobación en account_operation_check.           |
+| CI-04-041                | Decisión definitiva y recuperación por check_id en account_operation_check.     |
 | Preparaciones de Cuentas | Preparación común, bases, participantes y control de autoridad.                 |
 | Intentos de Fondos       | Identidad, intención, recursos, autoridades, decisión y recuperación.           |
 
@@ -2384,6 +2422,9 @@ al respaldo antes de reanudar.
 | Inicialización de posición               | Saldo cero sin movimiento ficticio.                     |
 | Cambio de moneda                         | Se rechaza.                                             |
 | Revocación concurrente con preparación   | Se ordena mediante cuenta y control de autoridad.       |
+| Revalidaciones concurrentes de la misma comprobación | Devuelven la misma decisión definitiva. |
+| Cambio de versión antes de confirmar la revalidación | Se vuelve a evaluar con las versiones vigentes. |
+| Dependencia indisponible durante la revalidación | La comprobación queda pendiente, sin decisión definitiva. |
 | CBU retirado                             | No se reutiliza.                                        |
 | Dos cuentas solicitan el mismo alias     | No confirman asignaciones superpuestas.                 |
 | Sustitución de alias incierta            | Conserva anterior y nombre solicitado bajo seguimiento. |
