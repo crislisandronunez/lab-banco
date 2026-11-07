@@ -34,12 +34,12 @@ La apertura no acredita dinero. Una reserva no es un débito. Una autorización 
 
 ## 2. Servicios y responsabilidades
 
-| Servicio | Identificador técnico | Base de datos | Responsabilidad |
-| --- | --- | --- | --- |
-| Cuentas | account-service | account_db | Ciclo de vida, participantes, capacidades, liquidaciones y cierre. |
-| Identificación bancaria | bank-identification-service | bank_identification_db | CBU, alias y correspondencias históricas. |
-| Fondos | funds-service | funds_db | Posiciones, movimientos, reservas y afectaciones monetarias. |
-| Operaciones de efectivo | cash-operation-service | cash_operation_db | Recepción y entrega física simulada, coordinación y diferencias. |
+| Servicio                | Identificador técnico       | Base de datos          | Responsabilidad                                                    |
+|-------------------------|-----------------------------|------------------------|--------------------------------------------------------------------|
+| Cuentas                 | account-service             | account_db             | Ciclo de vida, participantes, capacidades, liquidaciones y cierre. |
+| Identificación bancaria | bank-identification-service | bank_identification_db | CBU, alias y correspondencias históricas.                          |
+| Fondos                  | funds-service               | funds_db               | Posiciones, movimientos, reservas y afectaciones monetarias.       |
+| Operaciones de efectivo | cash-operation-service      | cash_operation_db      | Recepción y entrega física simulada, coordinación y diferencias.   |
 
 Cada servicio administra su base PostgreSQL, usuario y migraciones.
 
@@ -50,18 +50,18 @@ No existen consultas SQL ni relaciones JPA entre bases de servicios.
 
 ### 2.1. Autoridades relacionadas
 
-| Información o decisión | Responsable |
-| --- | --- |
-| Acuerdo y participantes contractuales | Contratos. |
-| Titularidad y autorizaciones operativas | Cuentas. |
-| Representación general | Representación. |
-| Facultades institucionales | Institución. |
-| Concesión y deuda de descubierto | Préstamos y líneas. |
-| Utilización monetaria inmediata | Fondos. |
-| Fundamento y prioridad de medidas | Restricciones. |
-| Existencias físicas del banco | Posiciones y liquidez. |
-| Recepción o entrega por operación | Operaciones de efectivo. |
-| Contabilidad general | Registración contable. |
+| Información o decisión                  | Responsable              |
+|-----------------------------------------|--------------------------|
+| Acuerdo y participantes contractuales   | Contratos.               |
+| Titularidad y autorizaciones operativas | Cuentas.                 |
+| Representación general                  | Representación.          |
+| Facultades institucionales              | Institución.             |
+| Concesión y deuda de descubierto        | Préstamos y líneas.      |
+| Utilización monetaria inmediata         | Fondos.                  |
+| Fundamento y prioridad de medidas       | Restricciones.           |
+| Existencias físicas del banco           | Posiciones y liquidez.   |
+| Recepción o entrega por operación       | Operaciones de efectivo. |
+| Contabilidad general                    | Registración contable.   |
 
 Fondos no concede financiación ni determina la procedencia comercial de una operación.
 
@@ -69,19 +69,19 @@ Fondos no concede financiación ni determina la procedencia comercial de una ope
 
 ### 3.1. Tipos
 
-| Dato | Java | PostgreSQL | HTTP |
-| --- | --- | --- | --- |
-| Identificador interno | UUID | uuid | Cadena UUID. |
-| Versión o secuencia | long | bigint | Entero positivo. |
-| Instante | Instant | timestamptz | ISO 8601 en UTC. |
-| Fecha | LocalDate | date | YYYY-MM-DD. |
-| Importe | BigDecimal | numeric(24,8) | Cadena decimal. |
-| Tasa o coeficiente | BigDecimal | numeric(24,12) | Cadena decimal. |
-| Moneda | Enumeración | varchar(3) | ARS o USD. |
-| Código | String | varchar(80) | Cadena normalizada. |
-| Referencia externa | String | varchar(120) | Cadena. |
-| Fundamento | String | varchar(4000) | Cadena. |
-| Resumen de contenido | String | char(64) | SHA-256 hexadecimal. |
+| Dato                  | Java        | PostgreSQL     | HTTP                 |
+|-----------------------|-------------|----------------|----------------------|
+| Identificador interno | UUID        | uuid           | Cadena UUID.         |
+| Versión o secuencia   | long        | bigint         | Entero positivo.     |
+| Instante              | Instant     | timestamptz    | ISO 8601 en UTC.     |
+| Fecha                 | LocalDate   | date           | YYYY-MM-DD.          |
+| Importe               | BigDecimal  | numeric(24,8)  | Cadena decimal.      |
+| Tasa o coeficiente    | BigDecimal  | numeric(24,12) | Cadena decimal.      |
+| Moneda                | Enumeración | varchar(3)     | ARS o USD.           |
+| Código                | String      | varchar(80)    | Cadena normalizada.  |
+| Referencia externa    | String      | varchar(120)   | Cadena.              |
+| Fundamento            | String      | varchar(4000)  | Cadena.              |
+| Resumen de contenido  | String      | char(64)       | SHA-256 hexadecimal. |
 
 Los importes ejecutables respetan centavos. Fondos rechaza una escala incompatible; no redondea una instrucción
 silenciosamente.
@@ -136,21 +136,21 @@ La falta de respuesta no demuestra rechazo ni ausencia de ejecución.
 
 ### 4.1. Datos
 
-| Campo | Regla |
-| --- | --- |
-| accountId | Identidad estable. |
-| accountReference | Referencia visible única. |
-| constitutionId | Constitución de origen, única. |
-| applicationItemId | Componente solicitado. |
-| contractId y contractVersion | Acuerdo aplicado. |
-| productId y productVersion | Producto. |
-| accountType | Caja de ahorro, cuenta sueldo o cuenta corriente. |
-| currency | Moneda inmutable. |
-| lifecycleStatus | Ciclo de vida. |
-| operationalVersion | Versión de condiciones. |
-| openedAt | Constitución. |
-| serviceEndedOn | Terminación efectiva del servicio. |
-| closedAt | Cierre definitivo. |
+| Campo                        | Regla                                             |
+|------------------------------|---------------------------------------------------|
+| accountId                    | Identidad estable.                                |
+| accountReference             | Referencia visible única.                         |
+| constitutionId               | Constitución de origen, única.                    |
+| applicationItemId            | Componente solicitado.                            |
+| contractId y contractVersion | Acuerdo aplicado.                                 |
+| productId y productVersion   | Producto.                                         |
+| accountType                  | Caja de ahorro, cuenta sueldo o cuenta corriente. |
+| currency                     | Moneda inmutable.                                 |
+| lifecycleStatus              | Ciclo de vida.                                    |
+| operationalVersion           | Versión de condiciones.                           |
+| openedAt                     | Constitución.                                     |
+| serviceEndedOn               | Terminación efectiva del servicio.                |
+| closedAt                     | Cierre definitivo.                                |
 
 Los participantes, autorizaciones, capacidades y condiciones económicas se conservan en estructuras relacionadas y
 versionadas.
@@ -276,21 +276,21 @@ persistente y decisión durable, conforme al protocolo común de confirmación.
 
 Fondos conserva:
 
-| Campo | Contenido |
-| --- | --- |
-| executionAttemptId | Identidad estable. |
-| actionId | Petición original. |
-| operationId | Operación de negocio. |
-| effectReferences | Efectos individuales. |
-| accountReferences | Cuentas afectadas. |
-| contentHash | Contenido exacto. |
-| requiredAuthorities | Autoridades necesarias. |
-| preparationReferences | Preparaciones obtenidas. |
-| resourceCommitments | Coberturas locales. |
-| decisionDeadline | Límite de confirmación. |
-| decision | Pendiente, confirmar o abortar. |
-| resultReferences | Reservas o movimientos resultantes. |
-| version | Concurrencia. |
+| Campo                 | Contenido                           |
+|-----------------------|-------------------------------------|
+| executionAttemptId    | Identidad estable.                  |
+| actionId              | Petición original.                  |
+| operationId           | Operación de negocio.               |
+| effectReferences      | Efectos individuales.               |
+| accountReferences     | Cuentas afectadas.                  |
+| contentHash           | Contenido exacto.                   |
+| requiredAuthorities   | Autoridades necesarias.             |
+| preparationReferences | Preparaciones obtenidas.            |
+| resourceCommitments   | Coberturas locales.                 |
+| decisionDeadline      | Límite de confirmación.             |
+| decision              | Pendiente, confirmar o abortar.     |
+| resultReferences      | Reservas o movimientos resultantes. |
+| version               | Concurrencia.                       |
 
 Los estados son preparación, listo para decidir, confirmado, abortado y recuperación requerida.
 
@@ -842,49 +842,49 @@ Las devoluciones posteriores utilizan actuaciones residuales, sin reabrir silenc
 
 ### 15.1. Cuentas
 
-| Contrato | Interfaz | Resultado |
-| --- | --- | --- |
-| CI-04-001 | POST /accounts | Cuenta y habilitación. |
-| CI-04-002 | GET /accounts/{id} | Condiciones actuales o históricas. |
-| CI-04-003 | POST /accounts/{id}/participant-changes | Participantes y permisos aplicados. |
-| CI-04-004 | POST /accounts/{id}/operational-changes | Capacidades y pendientes. |
-| CI-04-005 | POST /accounts/{id}/restriction-applications | Aplicación de medida y versión. |
-| CI-04-006 | GET /account-actions/{actionId} | Resultado original. |
-| CI-04-007 | POST /accounts/{id}/closures | Cierre o administración residual. |
-| CI-04-025 | POST /accounts/{id}/settlements | Bases, conceptos y ejecución. |
-| CI-04-040 | POST /accounts/{id}/operation-checks | Facultades, alcance y versión. |
+| Contrato  | Interfaz                                     | Resultado                           |
+|-----------|----------------------------------------------|-------------------------------------|
+| CI-04-001 | POST /accounts                               | Cuenta y habilitación.              |
+| CI-04-002 | GET /accounts/{id}                           | Condiciones actuales o históricas.  |
+| CI-04-003 | POST /accounts/{id}/participant-changes      | Participantes y permisos aplicados. |
+| CI-04-004 | POST /accounts/{id}/operational-changes      | Capacidades y pendientes.           |
+| CI-04-005 | POST /accounts/{id}/restriction-applications | Aplicación de medida y versión.     |
+| CI-04-006 | GET /account-actions/{actionId}              | Resultado original.                 |
+| CI-04-007 | POST /accounts/{id}/closures                 | Cierre o administración residual.   |
+| CI-04-025 | POST /accounts/{id}/settlements              | Bases, conceptos y ejecución.       |
+| CI-04-040 | POST /accounts/{id}/operation-checks         | Facultades, alcance y versión.      |
 
 CI-04-040 distingue comprobación informativa y preparación para un intento identificado. La segunda conserva su decisión
 y recuperación.
 
 ### 15.2. Identificación
 
-| Contrato | Interfaz | Resultado |
-| --- | --- | --- |
-| CI-04-008 | POST /bank-identifiers/assignments | Identificador y vigencia. |
-| CI-04-008 | POST /bank-identifiers/{id}/retirements | Retiro de nuevos usos. |
-| CI-04-009 | POST /accounts/{id}/alias-changes | Asignación o seguimiento. |
-| CI-04-010 | POST /bank-identifier-resolutions | Destino y fuente. |
+| Contrato  | Interfaz                                    | Resultado                 |
+|-----------|---------------------------------------------|---------------------------|
+| CI-04-008 | POST /bank-identifiers/assignments          | Identificador y vigencia. |
+| CI-04-008 | POST /bank-identifiers/{id}/retirements     | Retiro de nuevos usos.    |
+| CI-04-009 | POST /accounts/{id}/alias-changes           | Asignación o seguimiento. |
+| CI-04-010 | POST /bank-identifier-resolutions           | Destino y fuente.         |
 | CI-04-011 | GET /bank-identification-actions/{actionId} | Resultado del directorio. |
 
 ### 15.3. Fondos
 
-| Contrato | Interfaz | Resultado |
-| --- | --- | --- |
-| CI-04-012 | GET /fund-positions/{accountId} | Posición descompuesta. |
-| CI-04-012 | GET /fund-positions/{accountId}/movements | Historia con corte estable. |
-| CI-04-013 | POST /fund-reservations | Reserva y cobertura. |
-| CI-04-014 | POST /fund-reservations/{id}/consumptions | Débito y remanente. |
-| CI-04-015 | POST /fund-reservations/{id}/releases | Liberación comprobada. |
-| CI-04-016 | POST /fund-reservations/{id}/changes | Importe o firmeza. |
-| CI-04-017 | POST /fund-movements | Movimiento y posición. |
-| CI-04-018 | POST /internal-movement-groups | Conjunto indivisible. |
-| CI-04-019 | POST /overdraft-limit-applications | Límite aplicado. |
-| CI-04-020 | GET /overdraft-utilizations | Capital, cobertura y exceso. |
-| CI-04-021 | POST /fund-movements/{id}/corrections | Ajuste y remanente. |
-| CI-04-022 | GET /fund-actions/{actionId} | Actuación y efectos. |
-| CI-04-023 | GET /fund-reservations/{id} | Estado y circuito. |
-| CI-04-024 | POST /monetary-affectation-actions | Medida o habilitación condicionada. |
+| Contrato  | Interfaz                                  | Resultado                           |
+|-----------|-------------------------------------------|-------------------------------------|
+| CI-04-012 | GET /fund-positions/{accountId}           | Posición descompuesta.              |
+| CI-04-012 | GET /fund-positions/{accountId}/movements | Historia con corte estable.         |
+| CI-04-013 | POST /fund-reservations                   | Reserva y cobertura.                |
+| CI-04-014 | POST /fund-reservations/{id}/consumptions | Débito y remanente.                 |
+| CI-04-015 | POST /fund-reservations/{id}/releases     | Liberación comprobada.              |
+| CI-04-016 | POST /fund-reservations/{id}/changes      | Importe o firmeza.                  |
+| CI-04-017 | POST /fund-movements                      | Movimiento y posición.              |
+| CI-04-018 | POST /internal-movement-groups            | Conjunto indivisible.               |
+| CI-04-019 | POST /overdraft-limit-applications        | Límite aplicado.                    |
+| CI-04-020 | GET /overdraft-utilizations               | Capital, cobertura y exceso.        |
+| CI-04-021 | POST /fund-movements/{id}/corrections     | Ajuste y remanente.                 |
+| CI-04-022 | GET /fund-actions/{actionId}              | Actuación y efectos.                |
+| CI-04-023 | GET /fund-reservations/{id}               | Estado y circuito.                  |
+| CI-04-024 | POST /monetary-affectation-actions        | Medida o habilitación condicionada. |
 
 El seguimiento de los comandos monetarios incorpora:
 
@@ -899,13 +899,13 @@ responsable del crédito condicionado.
 
 ### 15.4. Efectivo
 
-| Contrato | Interfaz | Resultado |
-| --- | --- | --- |
-| CI-04-026 | POST /cash-deposits | Recepción declarada y comprobaciones. |
-| CI-04-027 | POST /cash-withdrawals | Coberturas y preparación. |
+| Contrato  | Interfaz                                    | Resultado                             |
+|-----------|---------------------------------------------|---------------------------------------|
+| CI-04-026 | POST /cash-deposits                         | Recepción declarada y comprobaciones. |
+| CI-04-027 | POST /cash-withdrawals                      | Coberturas y preparación.             |
 | CI-04-028 | POST /cash-operations/{id}/physical-results | Hecho físico y tratamiento monetario. |
-| CI-04-029 | POST /cash-differences/{id}/resolutions | Regularizaciones. |
-| CI-04-030 | GET /cash-operations/{id} | Resultados y pendientes. |
+| CI-04-029 | POST /cash-differences/{id}/resolutions     | Regularizaciones.                     |
+| CI-04-030 | GET /cash-operations/{id}                   | Resultados y pendientes.              |
 
 Las interfaces utilizan JSON y OpenAPI, con contexto común y campos específicos tipados.
 
@@ -913,17 +913,17 @@ Las respuestas usan 200, 201 y 202. Los errores usan Problem Details con 400, 40
 
 ## 16. Eventos
 
-| Contrato | Evento | Contenido |
-| --- | --- | --- |
-| CI-04-031 | AccountChanged | Capacidades, versión y pendientes. |
-| CI-04-032 | BankIdentificationChanged | Asignaciones y vigencias. |
-| CI-04-033 | FundReservationChanged | Importes, firmeza y cobertura. |
-| CI-04-034 | MonetaryMovementConfirmed | Movimiento, efecto y conjunto. |
-| CI-04-035 | OverdraftUtilizationChanged | Capital, límite y exceso. |
-| CI-04-036 | AccountSettlementRecorded | Cálculo y ejecución. |
-| CI-04-037 | CashOperationOutcomeRecorded | Hecho físico y diferencias. |
-| CI-04-038 | AccountClosureOutcomeRecorded | Cese, cierre o régimen residual. |
-| CI-04-039 | MonetaryAffectationApplied | Alcance, insuficiencia y causas restantes. |
+| Contrato  | Evento                        | Contenido                                  |
+|-----------|-------------------------------|--------------------------------------------|
+| CI-04-031 | AccountChanged                | Capacidades, versión y pendientes.         |
+| CI-04-032 | BankIdentificationChanged     | Asignaciones y vigencias.                  |
+| CI-04-033 | FundReservationChanged        | Importes, firmeza y cobertura.             |
+| CI-04-034 | MonetaryMovementConfirmed     | Movimiento, efecto y conjunto.             |
+| CI-04-035 | OverdraftUtilizationChanged   | Capital, límite y exceso.                  |
+| CI-04-036 | AccountSettlementRecorded     | Cálculo y ejecución.                       |
+| CI-04-037 | CashOperationOutcomeRecorded  | Hecho físico y diferencias.                |
+| CI-04-038 | AccountClosureOutcomeRecorded | Cese, cierre o régimen residual.           |
+| CI-04-039 | MonetaryAffectationApplied    | Alcance, insuficiencia y causas restantes. |
 
 Los temas son:
 
@@ -1024,24 +1024,24 @@ las recuperaciones no duplican dinero ni liberan coberturas indebidamente.
 
 ## 19. Correspondencia funcional
 
-| Operación | Implementación | Contratos |
-| --- | --- | --- |
-| OF-04-01. Apertura | Constitución y capacidades. | CI-04-001, 008 y 031. |
-| OF-04-02. Autorizaciones | Participantes y preparación del acto. | CI-04-003 y 040. |
-| OF-04-03. Condiciones | Versiones y aplicación. | CI-04-004 y 031. |
-| OF-04-04. Restricciones | Coordinación y afectación. | CI-04-005, 024 y 039. |
-| OF-04-05. Identificadores | Asignaciones. | CI-04-008 y 032. |
-| OF-04-06. Alias | Sustitución confirmada. | CI-04-009 y 011. |
-| OF-04-07. Resolución | Destino y fuente. | CI-04-010. |
-| OF-04-08. Posición | Corte e historia. | CI-04-012. |
-| OF-04-09. Reserva | Cobertura indivisible. | CI-04-013 y 033. |
-| OF-04-10. Administrar reservas | Consumo, liberación y revisión. | CI-04-014, 015, 016 y 023. |
-| OF-04-11. Movimiento | Decisión y efecto local. | CI-04-017, 022 y 034. |
-| OF-04-12. Conjuntos | Movimientos relacionados. | CI-04-018. |
-| OF-04-13. Descubierto | Utilización y conciliación. | CI-04-019, 020 y 035. |
-| OF-04-14. Liquidación | Cálculo y ejecución separada. | CI-04-025 y 036. |
-| OF-04-15. Depósito | Recepción y acreditación. | CI-04-026 y 028. |
-| OF-04-16. Extracción | Coberturas y entrega. | CI-04-027, 028 y 030. |
-| OF-04-17. Diferencias | Investigación y regularización. | CI-04-029 y 037. |
-| OF-04-18. Correcciones | Efectos vinculados. | CI-04-021 y 022. |
-| OF-04-19. Cierre | Barrera, inventario y régimen residual. | CI-04-002, 006, 007 y 038. |
+| Operación                      | Implementación                          | Contratos                  |
+|--------------------------------|-----------------------------------------|----------------------------|
+| OF-04-01. Apertura             | Constitución y capacidades.             | CI-04-001, 008 y 031.      |
+| OF-04-02. Autorizaciones       | Participantes y preparación del acto.   | CI-04-003 y 040.           |
+| OF-04-03. Condiciones          | Versiones y aplicación.                 | CI-04-004 y 031.           |
+| OF-04-04. Restricciones        | Coordinación y afectación.              | CI-04-005, 024 y 039.      |
+| OF-04-05. Identificadores      | Asignaciones.                           | CI-04-008 y 032.           |
+| OF-04-06. Alias                | Sustitución confirmada.                 | CI-04-009 y 011.           |
+| OF-04-07. Resolución           | Destino y fuente.                       | CI-04-010.                 |
+| OF-04-08. Posición             | Corte e historia.                       | CI-04-012.                 |
+| OF-04-09. Reserva              | Cobertura indivisible.                  | CI-04-013 y 033.           |
+| OF-04-10. Administrar reservas | Consumo, liberación y revisión.         | CI-04-014, 015, 016 y 023. |
+| OF-04-11. Movimiento           | Decisión y efecto local.                | CI-04-017, 022 y 034.      |
+| OF-04-12. Conjuntos            | Movimientos relacionados.               | CI-04-018.                 |
+| OF-04-13. Descubierto          | Utilización y conciliación.             | CI-04-019, 020 y 035.      |
+| OF-04-14. Liquidación          | Cálculo y ejecución separada.           | CI-04-025 y 036.           |
+| OF-04-15. Depósito             | Recepción y acreditación.               | CI-04-026 y 028.           |
+| OF-04-16. Extracción           | Coberturas y entrega.                   | CI-04-027, 028 y 030.      |
+| OF-04-17. Diferencias          | Investigación y regularización.         | CI-04-029 y 037.           |
+| OF-04-18. Correcciones         | Efectos vinculados.                     | CI-04-021 y 022.           |
+| OF-04-19. Cierre               | Barrera, inventario y régimen residual. | CI-04-002, 006, 007 y 038. |

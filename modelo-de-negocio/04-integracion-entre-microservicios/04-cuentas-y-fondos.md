@@ -25,48 +25,49 @@ Posiciones y liquidez administra las existencias físicas simuladas y las dispon
 
 ## 2. Catálogo de contratos
 
-| Identificador | Contrato | Proveedor | Clase |
-| --- | --- | --- | --- |
-| CI-04-001 | Abrir y habilitar una cuenta | Cuentas | Solicitud |
-| CI-04-002 | Consultar una cuenta y sus condiciones | Cuentas | Consulta |
-| CI-04-003 | Modificar titulares y autorizaciones | Cuentas | Solicitud |
-| CI-04-004 | Modificar condiciones y capacidades | Cuentas | Solicitud |
-| CI-04-005 | Aplicar o levantar restricción operativa | Cuentas | Solicitud |
-| CI-04-006 | Consultar actuación de cuenta | Cuentas | Consulta |
-| CI-04-007 | Solicitar cierre | Cuentas | Solicitud |
-| CI-04-008 | Asignar o retirar identificadores | Identificación bancaria | Solicitud |
-| CI-04-009 | Administrar alias | Identificación bancaria | Solicitud |
-| CI-04-010 | Resolver identificador | Identificación bancaria | Consulta |
-| CI-04-011 | Consultar actuación de identificación | Identificación bancaria | Consulta |
-| CI-04-012 | Consultar posición y movimientos | Fondos | Consulta |
-| CI-04-013 | Constituir reserva | Fondos | Solicitud |
-| CI-04-014 | Consumir reserva | Fondos | Solicitud |
-| CI-04-015 | Liberar reserva | Fondos | Solicitud |
-| CI-04-016 | Modificar importe o firmeza de reserva | Fondos | Solicitud |
-| CI-04-017 | Registrar movimiento monetario | Fondos | Solicitud |
-| CI-04-018 | Ejecutar movimientos internos relacionados | Fondos | Solicitud |
-| CI-04-019 | Aplicar límite operativo de descubierto | Fondos | Solicitud |
-| CI-04-020 | Consultar utilización de descubierto | Fondos | Consulta |
-| CI-04-021 | Corregir movimiento monetario | Fondos | Solicitud |
-| CI-04-022 | Consultar actuación monetaria | Fondos | Consulta |
-| CI-04-023 | Consultar reserva | Fondos | Consulta |
-| CI-04-024 | Aplicar o levantar afectación monetaria | Fondos | Solicitud |
-| CI-04-025 | Liquidar conceptos propios de cuenta | Cuentas | Solicitud |
-| CI-04-026 | Registrar depósito de efectivo | Operaciones de efectivo | Solicitud |
-| CI-04-027 | Solicitar extracción de efectivo | Operaciones de efectivo | Solicitud |
-| CI-04-028 | Registrar resultado físico | Operaciones de efectivo | Solicitud |
-| CI-04-029 | Resolver diferencia de efectivo | Operaciones de efectivo | Solicitud |
-| CI-04-030 | Consultar operación de efectivo | Operaciones de efectivo | Consulta |
-| CI-04-031 | Comunicar cambio de cuenta | Cuentas | Evento |
-| CI-04-032 | Comunicar cambio de identificación | Identificación bancaria | Evento |
-| CI-04-033 | Comunicar cambio de reserva | Fondos | Evento |
-| CI-04-034 | Comunicar movimiento confirmado | Fondos | Evento |
-| CI-04-035 | Comunicar variación de descubierto | Fondos | Evento |
-| CI-04-036 | Comunicar liquidación de cuenta | Cuentas | Evento |
-| CI-04-037 | Comunicar resultado de efectivo | Operaciones de efectivo | Evento |
-| CI-04-038 | Comunicar cierre o administración residual | Cuentas | Evento |
-| CI-04-039 | Comunicar afectación monetaria aplicada | Fondos | Evento |
-| CI-04-040 | Comprobar facultades y admisión de operación | Cuentas | Consulta |
+| Identificador | Contrato                                     | Proveedor               | Clase     |
+|---------------|----------------------------------------------|-------------------------|-----------|
+| CI-04-001     | Abrir y habilitar una cuenta                 | Cuentas                 | Solicitud |
+| CI-04-002     | Consultar una cuenta y sus condiciones       | Cuentas                 | Consulta  |
+| CI-04-003     | Modificar titulares y autorizaciones         | Cuentas                 | Solicitud |
+| CI-04-004     | Modificar condiciones y capacidades          | Cuentas                 | Solicitud |
+| CI-04-005     | Aplicar o levantar restricción operativa     | Cuentas                 | Solicitud |
+| CI-04-006     | Consultar actuación de cuenta                | Cuentas                 | Consulta  |
+| CI-04-007     | Solicitar cierre                             | Cuentas                 | Solicitud |
+| CI-04-008     | Asignar o retirar identificadores            | Identificación bancaria | Solicitud |
+| CI-04-009     | Administrar alias                            | Identificación bancaria | Solicitud |
+| CI-04-010     | Resolver identificador                       | Identificación bancaria | Consulta  |
+| CI-04-011     | Consultar actuación de identificación        | Identificación bancaria | Consulta  |
+| CI-04-012     | Consultar posición y movimientos             | Fondos                  | Consulta  |
+| CI-04-013     | Constituir reserva                           | Fondos                  | Solicitud |
+| CI-04-014     | Consumir reserva                             | Fondos                  | Solicitud |
+| CI-04-015     | Liberar reserva                              | Fondos                  | Solicitud |
+| CI-04-016     | Modificar importe o firmeza de reserva       | Fondos                  | Solicitud |
+| CI-04-017     | Registrar movimiento monetario               | Fondos                  | Solicitud |
+| CI-04-018     | Ejecutar movimientos internos relacionados   | Fondos                  | Solicitud |
+| CI-04-019     | Aplicar límite operativo de descubierto      | Fondos                  | Solicitud |
+| CI-04-020     | Consultar utilización de descubierto         | Fondos                  | Consulta  |
+| CI-04-021     | Corregir movimiento monetario                | Fondos                  | Solicitud |
+| CI-04-022     | Consultar actuación monetaria                | Fondos                  | Consulta  |
+| CI-04-023     | Consultar reserva                            | Fondos                  | Consulta  |
+| CI-04-024     | Aplicar o levantar afectación monetaria      | Fondos                  | Solicitud |
+| CI-04-025     | Liquidar conceptos propios de cuenta         | Cuentas                 | Solicitud |
+| CI-04-026     | Registrar depósito de efectivo               | Operaciones de efectivo | Solicitud |
+| CI-04-027     | Solicitar extracción de efectivo             | Operaciones de efectivo | Solicitud |
+| CI-04-028     | Registrar resultado físico                   | Operaciones de efectivo | Solicitud |
+| CI-04-029     | Resolver diferencia de efectivo              | Operaciones de efectivo | Solicitud |
+| CI-04-030     | Consultar operación de efectivo              | Operaciones de efectivo | Consulta  |
+| CI-04-031     | Comunicar cambio de cuenta                   | Cuentas                 | Evento    |
+| CI-04-032     | Comunicar cambio de identificación           | Identificación bancaria | Evento    |
+| CI-04-033     | Comunicar cambio de reserva                  | Fondos                  | Evento    |
+| CI-04-034     | Comunicar movimiento confirmado              | Fondos                  | Evento    |
+| CI-04-035     | Comunicar variación de descubierto           | Fondos                  | Evento    |
+| CI-04-036     | Comunicar liquidación de cuenta              | Cuentas                 | Evento    |
+| CI-04-037     | Comunicar resultado de efectivo              | Operaciones de efectivo | Evento    |
+| CI-04-038     | Comunicar cierre o administración residual   | Cuentas                 | Evento    |
+| CI-04-039     | Comunicar afectación monetaria aplicada      | Fondos                  | Evento    |
+| CI-04-040     | Comprobar facultades y admisión de operación | Cuentas                 | Consulta  |
+| CI-04-041     | Revalidar comprobación de operación          | Cuentas                 | Solicitud |
 
 Las preparaciones y operaciones de seguimiento desarrollan el protocolo común sin modificar el carácter informativo de
 las consultas.
@@ -188,20 +189,20 @@ La decisión monetaria no confirma automáticamente entrega física, aplicación
 
 El intento contiene:
 
-| Dato | Significado |
-| --- | --- |
-| executionAttemptId | Identidad estable |
-| actionId y operationId | Actuación y operación |
-| effectReferences | Efectos individuales |
-| accountReferences | Cuentas afectadas |
-| contentHash | Contenido exacto |
-| requiredAuthorities | Autoridades necesarias |
-| preparationReferences | Preparaciones |
-| resourceCommitments | Coberturas |
-| decisionDeadline | Límite de decisión |
-| decision | Pendiente, confirmar o abortar |
-| resultReferences | Reservas o movimientos |
-| version | Concurrencia |
+| Dato                   | Significado                    |
+|------------------------|--------------------------------|
+| executionAttemptId     | Identidad estable              |
+| actionId y operationId | Actuación y operación          |
+| effectReferences       | Efectos individuales           |
+| accountReferences      | Cuentas afectadas              |
+| contentHash            | Contenido exacto               |
+| requiredAuthorities    | Autoridades necesarias         |
+| preparationReferences  | Preparaciones                  |
+| resourceCommitments    | Coberturas                     |
+| decisionDeadline       | Límite de decisión             |
+| decision               | Pendiente, confirmar o abortar |
+| resultReferences       | Reservas o movimientos         |
+| version                | Concurrencia                   |
 
 Sus estados distinguen preparación, listo para decidir, confirmado, abortado y recuperación requerida.
 
@@ -211,13 +212,13 @@ La misma actuación recupera su intento original.
 
 Intervienen únicamente las exigibles:
 
-| Autoridad | Condición |
-| --- | --- |
-| Cuentas | Capacidades y permisos específicos |
-| Representación | Actuación por otra persona |
-| Restricciones | Medidas aplicables |
-| Institución | Facultades internas |
-| Responsable del negocio | Fundamento habilitante |
+| Autoridad               | Condición                          |
+|-------------------------|------------------------------------|
+| Cuentas                 | Capacidades y permisos específicos |
+| Representación          | Actuación por otra persona         |
+| Restricciones           | Medidas aplicables                 |
+| Institución             | Facultades internas                |
+| Responsable del negocio | Fundamento habilitante             |
 
 Los controles de fraude se vinculan al contenido y se utilizan dentro de su alcance y vigencia.
 
@@ -276,10 +277,10 @@ Una petición posterior a confirmar devuelve la decisión y los efectos existent
 
 ### 4.7. Interfaces de seguimiento
 
-| Interfaz | Finalidad |
-| --- | --- |
-| GET /fund-execution-attempts/{id} | Consultar intento y decisión |
-| POST /fund-execution-attempts/{id}/abort-requests | Solicitar aborto |
+| Interfaz                                          | Finalidad                    |
+|---------------------------------------------------|------------------------------|
+| GET /fund-execution-attempts/{id}                 | Consultar intento y decisión |
+| POST /fund-execution-attempts/{id}/abort-requests | Solicitar aborto             |
 
 La petición identifica actuación, intento, causa, solicitante y preparación afectada cuando corresponda.
 
@@ -578,14 +579,14 @@ Reglas:
 
 Aceptación:
 
-| Situación | Resultado |
-| --- | --- |
-| Saldo 100, reserva 30 y consumo 30 | Saldo 70, reserva cero |
-| Reserva 50 y consumo 20 | Remanente 30 |
-| Presentación válida del ejecutor autorizado | Consumo dentro del circuito |
-| Servicio ajeno | Rechazo |
-| Extracción debitada y presentación posterior | Referencia al efecto existente |
-| Consumo y liberación concurrentes | Remanente utilizado una sola vez |
+| Situación                                    | Resultado                        |
+|----------------------------------------------|----------------------------------|
+| Saldo 100, reserva 30 y consumo 30           | Saldo 70, reserva cero           |
+| Reserva 50 y consumo 20                      | Remanente 30                     |
+| Presentación válida del ejecutor autorizado  | Consumo dentro del circuito      |
+| Servicio ajeno                               | Rechazo                          |
+| Extracción debitada y presentación posterior | Referencia al efecto existente   |
+| Consumo y liberación concurrentes            | Remanente utilizado una sola vez |
 
 ### CI-04-015. Liberar reserva
 
@@ -691,14 +692,14 @@ Reglas:
 
 Aceptación:
 
-| Situación | Resultado |
-| --- | --- |
-| Origen 100, destino 20 y traslado 30 | Origen 70 y destino 50 |
-| Destino no admite crédito | No confirma solo el débito |
-| Compra de USD 100 por ARS 102.000 | Débito y crédito conjuntos, cargos separados |
-| Falta cambio aceptado | No convierte |
-| Mismo conjunto repetido | Recupera todos sus movimientos |
-| Fondos confirmó y falta regularización interna | Conserva confirmación y pendientes |
+| Situación                                      | Resultado                                    |
+|------------------------------------------------|----------------------------------------------|
+| Origen 100, destino 20 y traslado 30           | Origen 70 y destino 50                       |
+| Destino no admite crédito                      | No confirma solo el débito                   |
+| Compra de USD 100 por ARS 102.000              | Débito y crédito conjuntos, cargos separados |
+| Falta cambio aceptado                          | No convierte                                 |
+| Mismo conjunto repetido                        | Recupera todos sus movimientos               |
+| Fondos confirmó y falta regularización interna | Conserva confirmación y pendientes           |
 
 ### CI-04-019. Aplicar límite operativo de descubierto
 
@@ -733,6 +734,7 @@ Entrada: cuenta o financiación, corte y finalidad.
 Salida: límite, versión, capital, reservas, cobertura protegida, capacidad, exceso y variaciones.
 
 Aceptación: capital 100 e interés pendiente 10 informa utilización 100. Una acreditación ordinaria 50 reduce capital a
+
 50.
 
 ### CI-04-021. Corregir movimiento monetario
@@ -787,9 +789,9 @@ demuestra ausencia de ejecución.
 
 Clase: solicitud. Proveedor: Fondos.
 
-| Modalidad | Consumidor |
-| --- | --- |
-| Inmovilización por medida | Restricciones |
+| Modalidad                            | Consumidor                             |
+|--------------------------------------|----------------------------------------|
+| Inmovilización por medida            | Restricciones                          |
 | Habilitación de crédito condicionado | Responsable registrado de la condición |
 
 Los permisos son independientes.
@@ -819,14 +821,14 @@ Reglas:
 
 Aceptación:
 
-| Situación | Resultado |
-| --- | --- |
-| Medida 100 y fondos afectables 60 | Afecta 60 y conserva insuficiencia 40 |
+| Situación                               | Resultado                               |
+|-----------------------------------------|-----------------------------------------|
+| Medida 100 y fondos afectables 60       | Afecta 60 y conserva insuficiencia 40   |
 | Crédito 100 condicionado y cumplimiento | Extingue esa condición sin otro crédito |
-| Responsable no autorizado | No habilita |
-| Subsiste otra medida | Mantiene su afectación |
-| Cumplimiento parcial admitido de 40 | Conserva 60 pendientes |
-| Repetición | Sin doble liberación |
+| Responsable no autorizado               | No habilita                             |
+| Subsiste otra medida                    | Mantiene su afectación                  |
+| Cumplimiento parcial admitido de 40     | Conserva 60 pendientes                  |
+| Repetición                              | Sin doble liberación                    |
 
 ## 8. Liquidaciones propias
 
@@ -1053,15 +1055,61 @@ Reglas:
 
 Aceptación: permiso de consulta no permite extraer. Cambiar materialmente importe o destino exige otra evaluación.
 
+### CI-04-041. Revalidar comprobación de operación
+
+Clase: solicitud. Proveedor: Cuentas. Consumidores: Transferencias, Pagos, Autorizaciones, Operaciones de efectivo y
+servicios autorizados.
+
+Entrada: cuenta e identificador de la comprobación original (checkId).
+
+Actuación: recupera la comprobación original y su contenido, verifica que el solicitante esté autorizado y vuelve a
+evaluar las condiciones y facultades administradas por Cuentas.
+
+Salida: identificador de comprobación, resultado ADMITTED o PREVENTED, versión de cuenta, momento de evaluación y motivo
+cuando corresponda.
+
+Reglas:
+
+- La revalidación utiliza el contenido original sin admitir modificaciones del solicitante.
+
+- Comprueba capacidades, permisos específicos, participantes, actuación conjunta y restricciones aplicables.
+
+- Considera las condiciones vigentes y los cambios de cuenta confirmados desde la comprobación original.
+
+- Las conformidades conjuntas deben corresponder al mismo contenido y encontrarse vigentes.
+
+- La ausencia de facultades o conformidades exigibles impide admitir la operación.
+
+- Una comprobación inexistente o ajena al alcance autorizado del solicitante no puede revalidarse.
+
+- Una comprobación con decisión definitiva conserva su resultado y no se reabre mediante este contrato.
+
+- Una comprobación pendiente se resuelve como ADMITTED o PREVENTED cuando existen elementos suficientes para decidir.
+
+- El resultado definitivo se conserva junto con la comprobación, su contenido y la versión de cuenta evaluada.
+
+- Las solicitudes repetidas recuperan la decisión conservada sin generar otra evaluación.
+
+- Una indisponibilidad técnica o información indispensable no verificable impide concluir la revalidación y no se
+  interpreta como PREVENTED.
+
+- La revalidación no reserva dinero, no crea preparaciones ni sustituye las decisiones de otras autoridades.
+
+- Una decisión favorable corresponde a las condiciones evaluadas y no constituye autorización permanente.
+
+Aceptación: una comprobación pendiente obtiene una decisión definitiva de Cuentas cuando sus condiciones pueden
+verificarse. El resultado identifica la versión evaluada y se recupera ante solicitudes repetidas. Los impedimentos
+funcionales se distinguen de las fallas técnicas y de las decisiones pertenecientes a otras autoridades.
+
 ### 11.1. Preparación explícita de cuenta
 
 Cuando un coordinador necesita mantener una condición propia de Cuentas, utiliza:
 
-| Interfaz | Finalidad |
-| --- | --- |
-| POST /account-action-preparations | Preparar capacidad o permiso específico |
-| GET /account-action-preparations/{id} | Consultar preparación |
-| POST /account-action-preparations/{id}/decision-notifications | Incorporar decisión verificable |
+| Interfaz                                                      | Finalidad                               |
+|---------------------------------------------------------------|-----------------------------------------|
+| POST /account-action-preparations                             | Preparar capacidad o permiso específico |
+| GET /account-action-preparations/{id}                         | Consultar preparación                   |
+| POST /account-action-preparations/{id}/decision-notifications | Incorporar decisión verificable         |
 
 La solicitud identifica coordinador, intento, cuenta, acto, actores, contenido, importes pertinentes y límite.
 
@@ -1074,30 +1122,30 @@ Las preparaciones no se liberan por timeout.
 
 ## 12. Integraciones consumidas
 
-| Proveedor | Contratos o capacidades | Uso |
-| --- | --- | --- |
-| Institución | CI-01-004 y preparación exigible | Facultades internas |
-| Catálogo de productos | CI-01-005 | Capacidades |
-| Calendarios bancarios | CI-01-015 | Fechas |
-| Personas | CI-02-002 | Participantes |
-| Clientes | CI-02-015 | Relación comercial |
-| Representación | CI-02-021 y preparación explícita | Actuación ajena |
-| Contratos | CI-03-022 | Acuerdo |
-| Solicitudes de productos | CI-03-016 | Resultado de constitución |
-| Préstamos y líneas | CI-06-016, CI-06-018 y CI-06-021 | Descubierto y conceptos separados |
-| Autorizaciones | CI-07-013 | Operación y reserva vinculadas |
-| Procesamiento de consumos | CI-07-021 | Presentación y efectos existentes |
-| Cambio de moneda | CI-10-023 | Intercambio aceptado |
-| Posiciones y liquidez | CI-10-006 y CI-10-007 | Cobertura física |
-| Posiciones y liquidez | CI-10-003 | Existencias comprobadas |
-| Restricciones | CI-11-027 y preparación explícita | Medidas aplicables |
-| Restricciones | CI-11-029 | Resultado de aplicación |
-| Prevención de fraude | CI-11-023 | Control sensible |
-| Criterios tributarios | CI-11-033 | Tratamiento |
-| Gestión administrativa | CI-12-011 a CI-12-013 | Tareas y aprobaciones |
-| Documentos y comprobantes | CI-12-017 y CI-12-018 | Evidencias |
-| Comunicaciones | CI-12-028 y CI-12-031 | Entregas |
-| Servicios vinculados | Inventarios y actuaciones propias | Cierre |
+| Proveedor                 | Contratos o capacidades           | Uso                               |
+|---------------------------|-----------------------------------|-----------------------------------|
+| Institución               | CI-01-004 y preparación exigible  | Facultades internas               |
+| Catálogo de productos     | CI-01-005                         | Capacidades                       |
+| Calendarios bancarios     | CI-01-015                         | Fechas                            |
+| Personas                  | CI-02-002                         | Participantes                     |
+| Clientes                  | CI-02-015                         | Relación comercial                |
+| Representación            | CI-02-021 y preparación explícita | Actuación ajena                   |
+| Contratos                 | CI-03-022                         | Acuerdo                           |
+| Solicitudes de productos  | CI-03-016                         | Resultado de constitución         |
+| Préstamos y líneas        | CI-06-016, CI-06-018 y CI-06-021  | Descubierto y conceptos separados |
+| Autorizaciones            | CI-07-013                         | Operación y reserva vinculadas    |
+| Procesamiento de consumos | CI-07-021                         | Presentación y efectos existentes |
+| Cambio de moneda          | CI-10-023                         | Intercambio aceptado              |
+| Posiciones y liquidez     | CI-10-006 y CI-10-007             | Cobertura física                  |
+| Posiciones y liquidez     | CI-10-003                         | Existencias comprobadas           |
+| Restricciones             | CI-11-027 y preparación explícita | Medidas aplicables                |
+| Restricciones             | CI-11-029                         | Resultado de aplicación           |
+| Prevención de fraude      | CI-11-023                         | Control sensible                  |
+| Criterios tributarios     | CI-11-033                         | Tratamiento                       |
+| Gestión administrativa    | CI-12-011 a CI-12-013             | Tareas y aprobaciones             |
+| Documentos y comprobantes | CI-12-017 y CI-12-018             | Evidencias                        |
+| Comunicaciones            | CI-12-028 y CI-12-031             | Entregas                          |
+| Servicios vinculados      | Inventarios y actuaciones propias | Cierre                            |
 
 Las consultas no sustituyen preparaciones exigibles.
 
@@ -1131,27 +1179,27 @@ Fondos extingue solo esa causa y conserva las demás afectaciones.
 
 ## 13. Correspondencia funcional
 
-| Operación | Contratos principales |
-| --- | --- |
-| OF-04-01. Apertura | CI-04-001, CI-04-008, CI-04-031 |
-| OF-04-02. Titulares y autorizaciones | CI-04-003, CI-04-040 |
-| OF-04-03. Condiciones y capacidades | CI-04-004, CI-04-031 |
-| OF-04-04. Restricciones | CI-04-005, CI-04-024, CI-04-039 |
-| OF-04-05. Identificadores | CI-04-008, CI-04-032 |
-| OF-04-06. Alias | CI-04-009, CI-04-032 |
-| OF-04-07. Resolución | CI-04-010 |
-| OF-04-08. Saldos y movimientos | CI-04-012 |
-| OF-04-09. Reservas | CI-04-013, CI-04-033 |
+| Operación                            | Contratos principales                      |
+|--------------------------------------|--------------------------------------------|
+| OF-04-01. Apertura                   | CI-04-001, CI-04-008, CI-04-031            |
+| OF-04-02. Titulares y autorizaciones | CI-04-003, CI-04-040, CI-04-041            |
+| OF-04-03. Condiciones y capacidades  | CI-04-004, CI-04-031                       |
+| OF-04-04. Restricciones              | CI-04-005, CI-04-024, CI-04-039            |
+| OF-04-05. Identificadores            | CI-04-008, CI-04-032                       |
+| OF-04-06. Alias                      | CI-04-009, CI-04-032                       |
+| OF-04-07. Resolución                 | CI-04-010                                  |
+| OF-04-08. Saldos y movimientos       | CI-04-012                                  |
+| OF-04-09. Reservas                   | CI-04-013, CI-04-033                       |
 | OF-04-10. Administración de reservas | CI-04-014, CI-04-015, CI-04-016, CI-04-023 |
-| OF-04-11. Movimientos | CI-04-017, CI-04-034 |
-| OF-04-12. Movimientos internos | CI-04-018, CI-04-034 |
-| OF-04-13. Descubierto | CI-04-019, CI-04-020, CI-04-035 |
-| OF-04-14. Liquidaciones | CI-04-025, CI-04-036 |
-| OF-04-15. Depósito de efectivo | CI-04-026, CI-04-028, CI-04-037 |
-| OF-04-16. Extracción | CI-04-027, CI-04-028, CI-04-037 |
-| OF-04-17. Diferencias | CI-04-029 |
-| OF-04-18. Correcciones | CI-04-021, CI-04-034 |
-| OF-04-19. Cierre | CI-04-007, CI-04-038 |
+| OF-04-11. Movimientos                | CI-04-017, CI-04-034                       |
+| OF-04-12. Movimientos internos       | CI-04-018, CI-04-034                       |
+| OF-04-13. Descubierto                | CI-04-019, CI-04-020, CI-04-035            |
+| OF-04-14. Liquidaciones              | CI-04-025, CI-04-036                       |
+| OF-04-15. Depósito de efectivo       | CI-04-026, CI-04-028, CI-04-037            |
+| OF-04-16. Extracción                 | CI-04-027, CI-04-028, CI-04-037            |
+| OF-04-17. Diferencias                | CI-04-029                                  |
+| OF-04-18. Correcciones               | CI-04-021, CI-04-034                       |
+| OF-04-19. Cierre                     | CI-04-007, CI-04-038                       |
 
 CI-04-006, CI-04-011, CI-04-022 y CI-04-030 recuperan actuaciones de sus responsables.
 
