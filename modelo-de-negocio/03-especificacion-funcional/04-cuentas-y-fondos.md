@@ -323,6 +323,25 @@ Responsable: Cuentas.
 | Revocación anterior a completar la instrucción | No se utiliza la facultad revocada. |
 | Se incorpora otro titular | No se redistribuyen saldos por el mero registro. |
 
+### Resolución de comprobaciones pendientes
+
+Ante una solicitud autorizada, Cuentas reevalúa la instrucción original con las capacidades de la cuenta, permisos,
+las conformidades conjuntas y las restricciones aplicables en ese momento. Si cambia el contenido de la instrucción,
+corresponde una nueva comprobación.
+
+Cuando dispone de información suficiente, Cuentas admite la instrucción o determina qué condición impide admitirla.
+Una falla técnica o la imposibilidad de verificar información indispensable mantiene pendiente la comprobación.
+
+Una vez resuelta, las solicitudes sobre la misma comprobación recuperan la decisión original. La admisión se limita a
+las condiciones evaluadas. La ejecución monetaria requiere los controles de Fondos.
+
+| Situación | Resultado esperado |
+| --- | --- |
+| Se verifican las conformidades vigentes sobre la instrucción original | Cuentas admite la instrucción si cumple las demás condiciones aplicables. |
+| Se comprueba que una facultad exigible fue revocada | Cuentas determina que la instrucción está impedida. |
+| Falla una dependencia necesaria para decidir | La comprobación sigue pendiente. |
+| Se vuelve a solicitar la resolución de una comprobación ya decidida | Se recupera la decisión definitiva. |
+
 ## 6. OF-04-03. Modificar condiciones y capacidades operativas
 
 Propósito: aplicar cambios válidos sobre el funcionamiento de una cuenta.
