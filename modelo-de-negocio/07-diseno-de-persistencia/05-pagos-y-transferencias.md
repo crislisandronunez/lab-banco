@@ -304,6 +304,17 @@ Restricciones:
 
 - (destination_account_id, received_at, transfer_id), donde exista destino.
 
+**Comprobación pendiente de la cuenta de origen**
+
+Para INTERNAL y OUTGOING, si CI-04-040 devuelve PENDING, pending_components conserva un componente de Cuentas con el
+checkId de la comprobación y la huella de la instrucción validada. La cuenta se recupera de source_account_id. El
+componente se registra antes de suspender el flujo en VALIDATING.
+
+Al retomar la instrucción se recuperan la cuenta y el mismo checkId. HTTP 503 conserva el componente para reintento.
+Al recibir una decisión definitiva se comprueba que el componente siga asociado a esa instrucción y a ese checkId.
+La decisión y el retiro del componente se registran en la misma transacción. Una decisión ADMITTED se conserva entre
+las evidencias de authorization_basis. Una decisión PREVENTED impide avanzar a la ejecución monetaria.
+
 ### **6.2. transfer_accepted_destination**
 
 | **Columna**              | **Tipo**     | **Nulabilidad** |
