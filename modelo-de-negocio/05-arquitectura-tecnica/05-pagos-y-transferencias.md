@@ -208,6 +208,19 @@ necesaria para la operación.
 
 No se permite una transferencia entre monedas diferentes mediante una conversión implícita.
 
+**Comprobación de facultades sobre la cuenta de origen**
+
+Antes de solicitar el movimiento interno o constituir la reserva de una transferencia externa saliente,
+Transferencias comprueba las facultades sobre la cuenta de origen mediante CI-04-040.
+
+Si Cuentas devuelve PENDING, Transferencias vincula el checkId con la instrucción original y suspende el avance.
+Al retomarla, invoca CI-04-041 con la cuenta y el mismo checkId. Puede adjuntar referencias a conformidades conjuntas
+posteriores sobre esa instrucción.
+
+Con ADMITTED, continúa con los controles restantes. Con PREVENTED, detiene el avance de la instrucción.
+Si recibe HTTP 503, mantiene la instrucción a la espera de una decisión y puede reintentar con el mismo checkId.
+La respuesta técnica no permite inferir el resultado de la comprobación en Cuentas.
+
 ### 5.2. Transferencia interna
 
 El proceso:
