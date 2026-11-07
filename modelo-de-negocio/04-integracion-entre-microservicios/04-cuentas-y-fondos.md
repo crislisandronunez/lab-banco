@@ -1038,8 +1038,8 @@ servicios autorizados.
 
 Entrada: cuenta, actor, representado, acto, importe, moneda, participantes, contenido y momento.
 
-Salida: admitida, impedida o pendiente; facultades específicas, capacidades, participantes faltantes, restricciones
-consideradas, versión y alcance.
+Salida: identificador de comprobación (checkId), resultado admitido, impedido o pendiente, facultades específicas,
+capacidades, participantes faltantes, restricciones consideradas, versión y alcance.
 
 Reglas:
 
@@ -1078,7 +1078,7 @@ Reglas:
 
 - Las conformidades conjuntas deben corresponder al mismo contenido y encontrarse vigentes.
 
-- La ausencia de facultades o conformidades exigibles impide admitir la operación.
+- Si Cuentas verifica que falta una facultad o conformidad exigible, resuelve la comprobación como PREVENTED.
 
 - Una comprobación inexistente o ajena al alcance autorizado del solicitante no puede revalidarse.
 
@@ -1090,8 +1090,8 @@ Reglas:
 
 - Las solicitudes repetidas recuperan la decisión conservada sin generar otra evaluación.
 
-- Una indisponibilidad técnica o información indispensable no verificable impide concluir la revalidación y no se
-  interpreta como PREVENTED.
+- Si una falla técnica o la falta de información indispensable impide verificar un requisito, la comprobación sigue
+  pendiente.
 
 - La revalidación no reserva dinero, no crea preparaciones ni sustituye las decisiones de otras autoridades.
 
