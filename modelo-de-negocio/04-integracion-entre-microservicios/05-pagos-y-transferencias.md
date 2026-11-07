@@ -1035,6 +1035,15 @@ La habilitación operativa de un mecanismo no sustituye la existencia y vigencia
 | CI-04-022 | Recuperar el resultado de una actuación monetaria. |
 | CI-04-023 | Consultar una reserva. |
 | CI-04-040 | Comprobar facultades y admisión de una operación de cuenta. |
+| CI-04-041 | Revalidar una comprobación pendiente de Transferencias. |
+
+Si CI-04-040 devuelve PENDING, Transferencias solicita a Cuentas la revalidación de la misma instrucción mediante
+CI-04-041. Envía la cuenta y el checkId de la comprobación original y puede adjuntar referencias a conformidades
+conjuntas posteriores sobre esa instrucción.
+
+Con ADMITTED, Transferencias continúa con los controles restantes. Con PREVENTED, la instrucción no avanza.
+Si Cuentas devuelve HTTP 503, Transferencias puede reintentar con la misma cuenta y el mismo checkId. Esa respuesta
+solo indica que Cuentas no pudo devolver una decisión definitiva en esa solicitud.
 
 Cada ejecución conserva una ruta monetaria única. Consumir una reserva y registrar un débito independiente no son dos
 formas acumulables de ejecutar el mismo principal.
