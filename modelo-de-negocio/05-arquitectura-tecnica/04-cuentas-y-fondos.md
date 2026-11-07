@@ -215,8 +215,9 @@ Cuentas recupera la comprobación por su identificador, verifica que corresponda
 solicitante tenga acceso. Si existe una decisión definitiva, devuelve el resultado conservado.
 
 Para resolver una comprobación pendiente, Cuentas usa el contenido original y evalúa sus condiciones operativas
-vigentes. La decisión queda vinculada a la versión de cuenta evaluada. Si falta información indispensable o falla
-una dependencia necesaria para decidir, la comprobación sigue pendiente.
+vigentes. La decisión queda vinculada a la versión de cuenta evaluada. Si la evaluación falla antes de confirmar,
+Cuentas vuelve a consultar el resultado. Si recupera una decisión definitiva, la devuelve. Si no puede recuperarla,
+informa la falla técnica sin afirmar el estado de la comprobación.
 
 Si la solicitud aporta referencias a conformidades posteriores, Cuentas las verifica con su emisor y contrasta la
 huella de la instrucción original, los participantes y la vigencia. La evaluación utiliza la evidencia original y la

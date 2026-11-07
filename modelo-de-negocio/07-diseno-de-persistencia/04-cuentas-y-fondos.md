@@ -309,7 +309,8 @@ PREVENTED exige reason_code. ADMITTED conserva reason_code nulo.
 
 CI-04-041 evalúa el contenido original. Las referencias a conformidades posteriores verificadas y utilizadas se
 conservan en evaluated_joint_evidence con el esquema EvidenceReferences. Se registran junto con la decisión definitiva,
-separadas de original_input. Una falla que impide decidir conserva el registro pendiente.
+separadas de original_input. Una evaluación fallida no modifica el registro. Cuentas vuelve a consultar por check_id
+para recuperar una decisión definitiva que otra solicitud pudo haber confirmado.
 
 Para confirmar el resultado se bloquea primero la cuenta y luego la comprobación. Si el resultado ya es definitivo,
 se devuelve el resultado persistido. Si cambiaron las versiones evaluadas, se descarta la evaluación y se vuelve a

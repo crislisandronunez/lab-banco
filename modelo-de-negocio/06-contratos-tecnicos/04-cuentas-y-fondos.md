@@ -322,9 +322,11 @@ Una solicitud repetida devuelve la decisión conservada con la misma versión, m
 | 400 | Alguno de los identificadores de la ruta es inválido. |
 | 403 | El solicitante autenticado carece de autorización para revalidar la comprobación. |
 | 404 | La comprobación no existe para la cuenta indicada. |
-| 503 | Una dependencia o información indispensable está indisponible y no se puede concluir la evaluación. |
+| 503 | Una falla técnica impide concluir la evaluación y devolver una decisión definitiva. |
 
-El error 503 conserva pendiente la comprobación. PREVENTED se devuelve como decisión funcional en una respuesta 200.
+Si la evaluación falla, Cuentas intenta recuperar la decisión definitiva. Si la encuentra, devuelve HTTP 200 con ese
+resultado. Si la falla impide decidir y Cuentas no puede devolver una decisión definitiva, responde HTTP 503 sin
+informar el estado de la comprobación. PREVENTED se devuelve como decisión funcional en una respuesta 200.
 
 ## **5. Preparación de Cuentas**
 

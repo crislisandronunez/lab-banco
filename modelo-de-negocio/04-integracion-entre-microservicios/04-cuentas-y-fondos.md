@@ -1092,8 +1092,8 @@ Reglas:
 
 - Las solicitudes repetidas recuperan la decisión conservada sin generar otra evaluación.
 
-- Si una falla técnica o la falta de información indispensable impide verificar un requisito, la comprobación sigue
-  pendiente.
+- Si una falla técnica o la falta de información indispensable impide decidir, Cuentas devuelve la decisión
+  definitiva si puede recuperarla. En otro caso, informa la falla técnica sin afirmar el estado de la comprobación.
 
 - La revalidación no reserva dinero, no crea preparaciones ni sustituye las decisiones de otras autoridades.
 
