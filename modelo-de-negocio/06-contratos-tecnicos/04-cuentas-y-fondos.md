@@ -11,7 +11,7 @@ Este documento especifica las interfaces HTTP, estructuras de intercambio, event
 | Fondos                  | Posiciones monetarias, reservas, movimientos, descubierto y afectaciones.                 |
 | Operaciones de efectivo | Recepción y entrega física de efectivo, diferencias y coordinación monetaria.             |
 
-Comprende los contratos **CI-04-001 a CI-04-040**.
+Comprende los contratos **CI-04-001 a CI-04-041**.
 
 Fondos conserva la autoridad sobre el dinero registrado en cuentas. Cuentas conserva condiciones y permisos específicos.
 Operaciones de efectivo conserva el hecho físico.
@@ -199,6 +199,7 @@ Un autorizado no adquiere titularidad ni amplía su representación general.
 | CI-04-006    | getAccountAction          | GET /v1/account-actions/{actionId}                     |
 | CI-04-007    | requestAccountClosure     | POST /v1/accounts/{accountId}/closures                 |
 | CI-04-040    | checkAccountOperation     | POST /v1/accounts/{accountId}/operation-checks         |
+| CI-04-041    | revalidateAccountOperation | POST /v1/accounts/{accountId}/operation-checks/{checkId}/revalidations |
 
 ### **4.4. Constitución y consulta**
 
@@ -294,6 +295,35 @@ Devuelve:
 - Observaciones autorizadas.
 
 No reserva ni prepara condiciones.
+
+### **4.9. Revalidación de una comprobación**
+
+La ruta recibe accountId y checkId, ambos UUID. La solicitud utiliza autenticación y X-Correlation-Id y se envía sin
+cuerpo. La identidad de la comprobación determina la repetición de la solicitud, por lo que esta operación no requiere
+Idempotency-Key ni ActionContext.
+
+Devuelve HTTP 200 con:
+
+- checkId: UUID.
+
+- result: ADMITTED o PREVENTED.
+
+- accountVersion: Version de la cuenta evaluada.
+
+- evaluatedAt: Instant de la evaluación que produjo la decisión definitiva.
+
+- reasonCode: Code, obligatorio para PREVENTED.
+
+Una solicitud repetida devuelve la decisión conservada con la misma versión, momento y motivo, cuando corresponda.
+
+| **HTTP** | **Condición** |
+|----------|---------------|
+| 400 | Alguno de los identificadores de la ruta es inválido. |
+| 403 | El solicitante autenticado carece de autorización para revalidar la comprobación. |
+| 404 | La comprobación no existe para la cuenta indicada. |
+| 503 | Una dependencia o información indispensable está indisponible y no se puede concluir la evaluación. |
+
+El error 503 conserva pendiente la comprobación. PREVENTED se devuelve como decisión funcional en una respuesta 200.
 
 ## **5. Preparación de Cuentas**
 
