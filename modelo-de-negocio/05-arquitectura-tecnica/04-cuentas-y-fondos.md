@@ -218,9 +218,13 @@ Para resolver una comprobación pendiente, Cuentas usa el contenido original y e
 vigentes. La decisión queda vinculada a la versión de cuenta evaluada. Si falta información indispensable o falla
 una dependencia necesaria para decidir, la comprobación sigue pendiente.
 
-La confirmación de la decisión exige que la comprobación siga pendiente y que la versión operativa evaluada continúe
-vigente. Si otra solicitud ya confirmó una decisión, se devuelve ese resultado. Si cambió la versión antes de confirmar,
-se vuelve a evaluar con las condiciones vigentes.
+Si la solicitud aporta referencias a conformidades posteriores, Cuentas las verifica con su emisor y contrasta la
+huella de la instrucción original, los participantes y la vigencia. La evaluación utiliza la evidencia original y la
+posterior que resulte aplicable.
+
+La confirmación exige que la comprobación siga pendiente y que tanto la versión de la cuenta como la versión operativa
+evaluadas sigan vigentes. Si otra solicitud ya confirmó una decisión, se devuelve ese resultado. Si alguna versión
+cambió antes de confirmar, se vuelve a evaluar con las condiciones vigentes.
 
 ## 5. Condiciones operativas y restricciones
 

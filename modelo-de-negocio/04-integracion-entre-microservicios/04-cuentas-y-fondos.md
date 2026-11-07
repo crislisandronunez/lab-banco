@@ -1060,7 +1060,8 @@ Aceptación: permiso de consulta no permite extraer. Cambiar materialmente impor
 Clase: solicitud. Proveedor: Cuentas. Consumidores: Transferencias, Pagos, Autorizaciones, Operaciones de efectivo y
 servicios autorizados.
 
-Entrada: cuenta e identificador de la comprobación original (checkId).
+Entrada: cuenta e identificador de la comprobación original (checkId). Puede incluir referencias a conformidades
+conjuntas obtenidas después de la comprobación original.
 
 Actuación: recupera la comprobación original y su contenido, verifica que el solicitante esté autorizado y vuelve a
 evaluar las condiciones y facultades administradas por Cuentas.
@@ -1076,7 +1077,8 @@ Reglas:
 
 - Considera las condiciones vigentes y los cambios de cuenta confirmados desde la comprobación original.
 
-- Las conformidades conjuntas deben corresponder al mismo contenido y encontrarse vigentes.
+- Cuentas verifica las conformidades con su emisor y comprueba su vigencia, el participante que las otorgó y su
+  correspondencia con la instrucción original. Las referencias adicionales solo aportan evidencia.
 
 - Si Cuentas verifica que falta una facultad o conformidad exigible, resuelve la comprobación como PREVENTED.
 

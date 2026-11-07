@@ -292,6 +292,7 @@ La inicialización de Fondos crea una posición cero sin movimiento monetario.
 | evaluated_operational_version | bigint       | S               |
 | evaluated_at                  | timestamptz  | S               |
 | reason_code                   | varchar(80)  | S               |
+| evaluated_joint_evidence      | jsonb        | S               |
 
 original_input utiliza el esquema AccountOperationCheckInput versionado. La identidad, la cuenta, el servicio
 solicitante, la entrada y la versión original son inmutables. La recuperación utiliza check_id y exige que coincidan
@@ -302,10 +303,13 @@ original_account_version y evaluated_account_version referencian account_version
 evaluated_operational_version referencia account_operational_version.
 
 CI-04-040 registra la comprobación antes de devolver check_id. PENDING exige que las versiones evaluadas,
-evaluated_at y reason_code sean nulos. ADMITTED y PREVENTED exigen ambas versiones evaluadas y evaluated_at.
+evaluated_at, reason_code y evaluated_joint_evidence sean nulos. ADMITTED y PREVENTED exigen ambas versiones evaluadas
+y evaluated_at.
 PREVENTED exige reason_code. ADMITTED conserva reason_code nulo.
 
-CI-04-041 evalúa el contenido original. Una falla que impide decidir conserva el registro pendiente.
+CI-04-041 evalúa el contenido original. Las referencias a conformidades posteriores verificadas y utilizadas se
+conservan en evaluated_joint_evidence con el esquema EvidenceReferences. Se registran junto con la decisión definitiva,
+separadas de original_input. Una falla que impide decidir conserva el registro pendiente.
 
 Para confirmar el resultado se bloquea primero la cuenta y luego la comprobación. Si el resultado ya es definitivo,
 se devuelve el resultado persistido. Si cambiaron las versiones evaluadas, se descarta la evaluación y se vuelve a

@@ -298,8 +298,9 @@ No reserva ni prepara condiciones.
 
 ### **4.9. Revalidación de una comprobación**
 
-La ruta recibe accountId y checkId, ambos UUID. La solicitud utiliza autenticación y X-Correlation-Id y se envía sin
-cuerpo. La identidad de la comprobación determina la repetición de la solicitud, por lo que esta operación no requiere
+La ruta recibe accountId y checkId, ambos UUID. La solicitud utiliza autenticación y X-Correlation-Id. El cuerpo es
+opcional y admite únicamente jointEvidenceReferences (ObjectReference[]), con referencias a conformidades posteriores
+para la instrucción original. La decisión definitiva se recupera por checkId. Esta operación no requiere
 Idempotency-Key ni ActionContext.
 
 Devuelve HTTP 200 con:
@@ -308,7 +309,7 @@ Devuelve HTTP 200 con:
 
 - result: ADMITTED o PREVENTED.
 
-- accountVersion: Version de la cuenta evaluada.
+- accountVersion: Version de la cuenta evaluada. La versión operativa se utiliza en la confirmación interna.
 
 - evaluatedAt: Instant de la evaluación que produjo la decisión definitiva.
 
