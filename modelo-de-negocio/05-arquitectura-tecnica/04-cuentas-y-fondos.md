@@ -209,6 +209,19 @@ Inicializar la posición no genera movimiento ni concede crédito.
 
 Las actuaciones utilizan referencias estables. Una dependencia pendiente impide informar habilitación completa.
 
+### 4.5. Resolución de comprobaciones pendientes
+
+Cuentas recupera la comprobación por su identificador, verifica que corresponda a la cuenta y comprueba que el
+solicitante tenga acceso. Si existe una decisión definitiva, devuelve el resultado conservado.
+
+Para resolver una comprobación pendiente, Cuentas usa el contenido original y evalúa sus condiciones operativas
+vigentes. La decisión queda vinculada a la versión de cuenta evaluada. Si falta información indispensable o falla
+una dependencia necesaria para decidir, la comprobación sigue pendiente.
+
+La confirmación de la decisión exige que la comprobación siga pendiente y que la versión operativa evaluada continúe
+vigente. Si otra solicitud ya confirmó una decisión, se devuelve ese resultado. Si cambió la versión antes de confirmar,
+se vuelve a evaluar con las condiciones vigentes.
+
 ## 5. Condiciones operativas y restricciones
 
 Cuentas conserva versiones de capacidades, participantes, permisos, medidas y limitaciones de cierre.
@@ -853,9 +866,9 @@ Las devoluciones posteriores utilizan actuaciones residuales, sin reabrir silenc
 | CI-04-007 | POST /accounts/{id}/closures                 | Cierre o administración residual.   |
 | CI-04-025 | POST /accounts/{id}/settlements              | Bases, conceptos y ejecución.       |
 | CI-04-040 | POST /accounts/{id}/operation-checks         | Facultades, alcance y versión.      |
+| CI-04-041 | Solicitud de revalidación por cuenta y comprobación | Decisión de la comprobación original. |
 
-CI-04-040 distingue comprobación informativa y preparación para un intento identificado. La segunda conserva su decisión
-y recuperación.
+La comprobación informativa y su revalidación se gestionan por separado de la preparación para un intento monetario.
 
 ### 15.2. Identificación
 
@@ -1027,7 +1040,7 @@ las recuperaciones no duplican dinero ni liberan coberturas indebidamente.
 | Operación                      | Implementación                          | Contratos                  |
 |--------------------------------|-----------------------------------------|----------------------------|
 | OF-04-01. Apertura             | Constitución y capacidades.             | CI-04-001, 008 y 031.      |
-| OF-04-02. Autorizaciones       | Participantes y preparación del acto.   | CI-04-003 y 040.           |
+| OF-04-02. Autorizaciones       | Participantes, comprobación y revalidación. | CI-04-003, 040 y 041. |
 | OF-04-03. Condiciones          | Versiones y aplicación.                 | CI-04-004 y 031.           |
 | OF-04-04. Restricciones        | Coordinación y afectación.              | CI-04-005, 024 y 039.      |
 | OF-04-05. Identificadores      | Asignaciones.                           | CI-04-008 y 032.           |
